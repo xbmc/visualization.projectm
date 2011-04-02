@@ -1,0 +1,173 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_INIT([waveform], [1.0.0], [http://trac.xbmc.org])
+AC_CONFIG_HEADERS([config.h])
+AH_TOP([#pragma once])
+AC_CONFIG_AUX_DIR(build-aux)
+AM_INIT_AUTOMAKE(waveform,1.0.0)
+
+# Cross compiling support
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
+
+# Checks for header files.
+AC_CHECK_HEADERS([GL/glew.h])
+AC_CHECK_HEADERS([limits.h assert.h math.h])
+
+# host detection and setup
+case $host in
+  i*86*-linux-gnu*)
+     ARCH="i486-linux"
+     ;;
+  x86_64-*-linux-gnu*)
+     ARCH="x86_64-linux"
+     ;;
+  i386-apple-darwin*)
+     ARCH="x86-osx"
+     # define i386 or x86_64, cannot use $HOSTTYPE as it reports x86_64 on 10.6 regardless of kernel flavor
+     ARCHTYPE=`uname -m`
+     AC_SUBST([ARCHTYPE])
+     ;;
+  powerpc-apple-darwin*)
+     ARCH="powerpc-osx"
+     # define ppc
+     ARCHTYPE=`arch`
+     AC_SUBST([ARCHTYPE])
+     ;;
+  powerpc-*-linux-gnu*)
+     ARCH="powerpc-linux"
+     AC_SUBST(ARCH_DEFINES, "-D_POWERPC")
+     ;;
+  powerpc64-*-linux-gnu*)
+     ARCH="powerpc64-linux"
+     AC_SUBST(ARCH_DEFINES, "-D_POWERPC64")
+     ;;
+  arm*-*-linux-gnu*)
+     ARCH="arm"
+     AC_SUBST(ARCH_DEFINES, "-D_ARMEL")
+     ;;
+  *)
+     AC_MSG_ERROR(unsupported host ($host))
+esac
+AC_SUBST([ARCH])
+if test "$use_debug" = "yes"; then
+  final_message="$final_message\n  Debugging:\tYes"
+  if test "$use_profiling" = "yes"; then
+    final_message="$final_message\n  Profiling:\tYes"
+    DEBUG_FLAGS="-g -pg -D_DEBUG -Wall"
+  else
+    final_message="$final_message\n  Profiling:\tNo"
+    DEBUG_FLAGS="-g -D_DEBUG -Wall"
+  fi
+else
+  final_message="$final_message\n  Debugging:\tNo"
+  if test "$use_profiling" = "yes"; then
+    final_message="$final_message\n  Profiling:\tYes"
+    DEBUG_FLAGS="-pg -DNDEBUG=1"
+  else
+    final_message="$final_message\n  Profiling:\tNo"
+    DEBUG_FLAGS="-DNDEBUG=1"
+  fi
+fi
+
+CFLAGS="$CFLAGS $DEBUG_FLAGS"
+CXXFLAGS="$CXXFLAGS $DEBUG_FLAGS"
+
+if test "$use_optimizations" = "yes"; then
+  final_message="$final_message\n  Optimization:\tYes"
+  CXXFLAGS="$CXXFLAGS -O2"
+  CFLAGS="$CFLAGS -O2"
+else
+  final_message="$final_message\n  Optimization:\tNo"
+fi
+
+
+# platform specific flags
+if test "$host_vendor" = "apple" ; then
+  AC_SUBST(MACOSX_DEPLOYMENT_TARGET, "10.4")
+  # need these in CFLAGS/CXXFLAGS so AC_CHECK_LIB works
+  CFLAGS="$CFLAGS -I/opt/local/include"
+  CXXFLAGS="$CXXFLAGS -I/opt/local/include"
+  # standard xbmc paths
+  INCLUDES="$INCLUDES -I\$(abs_top_srcdir)/xbmc/osx"
+  LDFLAGS="$LDFLAGS -mmacosx-version-min=10.4"
+  LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+  LDFLAGS="$LDFLAGS -L/opt/local/lib"
+  LDFLAGS="$LDFLAGS -L/opt/local/lib/mysql5/mysql"
+  LDFLAGS="$LDFLAGS -L/opt/local/lib/samba3"
+  LIBS="$LIBS -framework IOKit"
+  LIBS="$LIBS -framework Cocoa"
+  LIBS="$LIBS -framework OpenGL"
+  LIBS="$LIBS -framework AppKit"
+  LIBS="$LIBS -framework Carbon"
+  LIBS="$LIBS -framework CoreAudio"
+  LIBS="$LIBS -framework QuickTime"
+  LIBS="$LIBS -framework AudioUnit"
+  LIBS="$LIBS -framework Foundation"
+  LIBS="$LIBS -framework CoreServices"
+  LIBS="$LIBS -framework CoreVideo"
+  LIBS="$LIBS -framework CoreAudio"
+  LIBS="$LIBS -framework AudioToolbox"
+  LIBS="$LIBS -framework CoreFoundation"
+  LIBS="$LIBS -framework DiskArbitration"
+  LIBS="$LIBS -framework ApplicationServices"
+elif expr "X$host_cpu" : 'Xarm.*' > /dev/null; then
+  use_arch=arm
+  CFLAGS="$CFLAGS -mfloat-abi=softfp -mno-apcs-stack-check"
+  CXXFLAGS="$CXXFLAGS -mfloat-abi=softfp -mno-apcs-stack-check"
+  FFMPEG_EXTRACFLAGS="-mfloat-abi=softfp"
+  if test "$use_tegra" = "yes"; then
+    # Compile for ARMv7a architecture, need to test gcc for vfpv3-d16 support 
+    SAVE_CFLAGS="$CFLAGS"
+    CFLAGS="-mfpu=vfpv3-d16"
+    AC_COMPILE_IFELSE(
+      [int foo;],
+      [ CFLAGS="$SAVE_CFLAGS -Wno-psabi -Wa,-march=armv7a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mthumb-interwork"
+        CXXFLAGS="$CXXFLAGS -Wno-psabi -Wa,-march=armv7a -mtune=cortex-a9 -mfpu=vfpv3-d16 -mthumb-interwork"
+        FFMPEG_EXTRACFLAGS+=" -mtune=cortex-a9 -mfpu=vfpv3-d16"
+        use_cpu=cortex-a9],
+      [ CFLAGS="$SAVE_CFLAGS -Wa,-march=armv6 -mtune=cortex-a8 -mthumb-interwork"
+        CXXFLAGS="$CXXFLAGS -Wa,-march=armv6 -mtune=cortex-a8 -mthumb-interwork"    
+        use_cpu=cortex-a8])
+  else
+    # Compile for ARMv7a architecture, CortexA8 cpu and NEON coprocessor
+    CFLAGS+=" -Wa,-march=armv7a -mcpu=cortex-a8 -mfpu=neon -mvectorize-with-neon-quad"
+    CXXFLAGS+=" -Wa,-march=armv7a -mcpu=cortex-a8 -mfpu=neon -mvectorize-with-neon-quad"
+    FFMPEG_EXTRACFLAGS+=" -mfpu=neon"
+  fi
+fi
+
+# Checks for programs.
+PASSED_CXXFLAGS=$CXXFLAGS # Hack to override autoconf default values
+AC_PROG_CXX
+CXXFLAGS="$PASSED_CXXFLAGS $DEFAULT_COMPILE_FLAGS"
+PASSED_CFLAGS=$CFLAGS # Hack to override autoconf default values
+AC_PROG_CC
+CFLAGS="$PASSED_CFLAGS $DEFAULT_COMPILE_FLAGS"
+AC_PROG_LIBTOOL
+
+# Checks for libraries.
+AC_CHECK_LIB([c], [main])
+AC_CHECK_LIB([m], [main])
+AC_CHECK_LIB([GL],  [main],, AC_MSG_ERROR($missing_library))
+AC_CHECK_LIB([GLEW],[main],, AC_MSG_ERROR($missing_library))
+
+OUTPUT_FILES="Makefile"
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
+
+pushd .
+cd lib/libprojectM
+cmake -DCMAKE_BUILD_TYPE=None -DUSE_FTGL:BOOL=OFF \
+      -DCMAKE_C_FLAGS:STRING="${CFLAGS} -fPIC" -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} -fPIC" \
+      -DCMAKE_INSTALL_PREFIX="${prefix}" -DCMAKE_INSTALL_LIBDIR:PATH="${libdir}" \
+      -DINCLUDE_INSTALL_DIR:PATH="${includedir}" -DLIB_INSTALL_DIR:PATH="${libdir}" \
+      -DSYSCONF_INSTALL_DIR:PATH="${sysconfdir}" -DSHARE_INSTALL_PREFIX:PATH="${datadir}" \
+      -DBUILD_PROJECTM_STATIC:BOOL=1 .
+popd
+
+AC_CONFIG_FILES([${OUTPUT_FILES}])
+AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT
