@@ -2,17 +2,18 @@ PROJECT(visualization.projectm)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-include(AddonVersion.cmake)
-addon_version(visualization.projectm PM)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
-OPTION(PACKAGE_ZIP "Package Zip file?" OFF)
-
-FIND_PATH(XBMC_INCLUDE_DIR xbmc/xbmc_addon_dll.h)
+FIND_PACKAGE(xbmc REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLEW REQUIRED)
+
+addon_version(visualization.projectm PM)
+
 ADD_DEFINITIONS(-DHAS_SDL_OPENGL)
+SET(DATA_PATH "/usr/share/xbmc/addons/visualization.projectm/resources")
+ADD_DEFINITIONS("-DDATAPATH=\"${DATAPATH}\"")
+
 SET(INCLUDES ${OpenGL_INCLUDE_DIR}
              ${GLEW_INCLUDE_DIR}
              ${XBMC_INCLUDE_DIR})
@@ -21,11 +22,6 @@ SET(DEPLIBS ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES})
 
 SET(SOURCES src/Main.cpp)
-ADD_LIBRARY(projectm ${SOURCES})
-
-SET(DATA_PATH "/usr/share/xbmc/addons/visualization.projectm/resources")
-
-ADD_DEFINITIONS("-DDATAPATH=\"${DATAPATH}\"")
 
 FIND_PACKAGE(ProjectM)
 IF (PROJECTM_FOUND)
@@ -53,23 +49,8 @@ ELSE(PROJECTM_FOUND)
   SET(DEPLIBS ${DEPLIBS} ${CMAKE_BINARY_DIR}/installed/lib/libprojectM.a)
   SET(INCLUDES ${INCLUDES} ${CMAKE_BINARY_DIR}/installed/include/libprojectM)
 ENDIF(PROJECTM_FOUND)
-INCLUDE_DIRECTORIES(${INCLUDES})
-TARGET_LINK_LIBRARIES(projectm ${DEPLIBS})
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "-s")
-set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "-s")
-SET_TARGET_PROPERTIES(projectm PROPERTIES VERSION ${PM_VERSION}
-                                          SOVERSION 13.0
-                                          PREFIX "")
 
-IF(PACKAGE_ZIP)
-  # Pack files together to create an archive
-  INSTALL(DIRECTORY ${PROJECT_NAME} DESTINATION ./)
-  INSTALL(TARGETS projectm DESTINATION visualization.projectm)
-  SET(CPACK_GENERATOR "ZIP")
-  SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-  SET(CPACK_PACKAGE_FILE_NAME ${CMAKE_PROJECT_NAME}-${PM_VERSION})
-  INCLUDE(CPack)
-ELSE(PACKAGE_ZIP)
-  INSTALL(TARGETS projectm DESTINATION lib/xbmc/addons/visualization.projectm)
-  INSTALL(DIRECTORY visualization.projectm DESTINATION share/xbmc/addons)
-ENDIF(PACKAGE_ZIP)
+INCLUDE_DIRECTORIES(${INCLUDES})
+
+build_addon(visualization.projectm SOURCES DEPLIBS PM_VERSION)
+install_addon(visualization.projectm ${PM_VERSION})
