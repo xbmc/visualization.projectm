@@ -97,11 +97,8 @@ extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
   g_configPM.windowHeight = visprops->height;
   g_configPM.aspectCorrection = true;
   g_configPM.easterEgg = 0.0;
-/*  // projectM macros are amazingly useless :/
-#if PROJECTM_VERSION != 2.0.00 
-  g_configPM.windowLeft = visprops->x;
-  g_configPM.windowBottom = visprops->y;
-#endif*/
+  g_configPM.titleFontURL = DATAPATH"/Vera.ttf";
+  g_configPM.menuFontURL = DATAPATH"/VeraMono.ttf";
   lastLoggedPresetIdx = lastPresetIdx;
 
   return ADDON_STATUS_NEED_SAVEDSETTINGS;
@@ -337,8 +334,7 @@ void ChoosePresetPack(int pvalue)
 {
   g_UserPackFolder = false;
   if (pvalue == 0)
-    g_configPM.presetURL = "/usr/share/projectm/presets";
-//      "/usr/lib/xbmc/addons/visualization.projectm/resources/presets";
+    g_configPM.presetURL = DATAPATH"/presets";
   else if (pvalue == 1) //User preset folder has been chosen
     g_UserPackFolder = true;
 }
