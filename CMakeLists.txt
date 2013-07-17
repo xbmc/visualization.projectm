@@ -23,8 +23,7 @@ SET(DEPLIBS ${OPENGL_LIBRARIES}
 SET(SOURCES src/Main.cpp)
 ADD_LIBRARY(projectm ${SOURCES})
 
-#SET(DATA_PATH "/usr/share/xbmc/addons/visualization.projectm/resources")
-SET(DATAPATH "/home/akva/.xbmc/addons/visualization.projectm/resources")
+SET(DATA_PATH "/usr/share/xbmc/addons/visualization.projectm/resources")
 
 ADD_DEFINITIONS("-DDATAPATH=\"${DATAPATH}\"")
 
