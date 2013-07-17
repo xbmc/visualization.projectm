@@ -1,0 +1,15 @@
+Source: xbmc-visualization-projectm
+Priority: extra
+Maintainer: Arne Morten Kvarving <spiff@xbmc.org>
+Build-Depends: debhelper (>= 8.0.0), cmake, xbmc-addon-dev, libprojectm-dev,
+               xbmc-visualization-dev, libgl1-mesa-dev, libglew-dev
+Standards-Version: 3.9.2
+Section: libs
+Homepage: http://xbmc.org
+
+Package: xbmc-visualization-projectm
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ProjectM visualizer for XBMC
+ ProjectM visualizer for XBMC
