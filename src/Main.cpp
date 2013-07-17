@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2007-2010 Team XBMC
+ *      Copyright (C) 2007-2013 Team XBMC
  *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,9 +13,8 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, write to
- *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
- *  http://www.gnu.org/copyleft/gpl.html
+ *  along with XBMC; see the file COPYING.  If not, see
+ *  <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -54,9 +53,10 @@ d4rk@xbmc.org
 
 */
 
-#include "xbmc_vis_dll.h"
+#include <xbmc/xbmc_vis_dll.h>
+#include <xbmc/xbmc_addon_cpp_dll.h>
 #include <GL/glew.h>
-#include "../lib/libprojectM/projectM.hpp"
+#include "projectM.hpp"
 #include <string>
 
 projectM *globalPM = NULL;
@@ -76,14 +76,15 @@ bool g_UserPackFolder;
 char lastPresetDir[1024];
 bool lastLockStatus;
 int lastPresetIdx;
+unsigned int lastLoggedPresetIdx;
 
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by XBMC. Do any setup here.
 //-----------------------------------------------------------------------------
-extern "C" ADDON_STATUS Create(void* hdl, void* props)
+extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
 {
   if (!props)
-    return STATUS_UNKNOWN;
+    return ADDON_STATUS_UNKNOWN;
 
   VIS_PROPS* visprops = (VIS_PROPS*)props;
 
@@ -96,10 +97,14 @@ extern "C" ADDON_STATUS Create(void* hdl, void* props)
   g_configPM.windowHeight = visprops->height;
   g_configPM.aspectCorrection = true;
   g_configPM.easterEgg = 0.0;
+/*  // projectM macros are amazingly useless :/
+#if PROJECTM_VERSION != 2.0.00 
   g_configPM.windowLeft = visprops->x;
   g_configPM.windowBottom = visprops->y;
+#endif*/
+  lastLoggedPresetIdx = lastPresetIdx;
 
-  return STATUS_NEED_SAVEDSETTINGS;
+  return ADDON_STATUS_NEED_SAVEDSETTINGS;
 }
 
 //-- Start --------------------------------------------------------------------
@@ -113,10 +118,10 @@ extern "C" void Start(int iChannels, int iSamplesPerSec, int iBitsPerSample, con
 //-- Audiodata ----------------------------------------------------------------
 // Called by XBMC to pass new audio data to the vis
 //-----------------------------------------------------------------------------
-extern "C" void AudioData(const short* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
+extern "C" void AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
 {
   if (globalPM)
-    globalPM->pcm()->addPCM16Data(pAudioData, iAudioDataLength);
+    globalPM->pcm()->addPCMfloat(pAudioData, iAudioDataLength);
 }
 
 //-- Render -------------------------------------------------------------------
@@ -125,7 +130,17 @@ extern "C" void AudioData(const short* pAudioData, int iAudioDataLength, float *
 extern "C" void Render()
 {
   if (globalPM)
+  {
     globalPM->renderFrame();
+    if (g_presets)
+    {
+      unsigned preset;
+      globalPM->selectedPresetIndex(preset);
+//      if (lastLoggedPresetIdx != preset)
+//        CLog::Log(LOGDEBUG,"PROJECTM - Changed preset to: %s",g_presets[preset]);
+      lastLoggedPresetIdx = preset;
+    }
+  }
 }
 
 //-- GetInfo ------------------------------------------------------------------
@@ -237,7 +252,7 @@ extern "C" bool IsLocked()
 // Do everything before unload of this add-on
 // !!! Add-on master function !!!
 //-----------------------------------------------------------------------------
-extern "C" void Stop()
+extern "C" void ADDON_Stop()
 {
   if (globalPM)
   {
@@ -260,7 +275,7 @@ extern "C" void Stop()
 // Do everything before unload of this add-on
 // !!! Add-on master function !!!
 //-----------------------------------------------------------------------------
-extern "C" void Destroy()
+extern "C" void ADDON_Destroy()
 {
 }
 
@@ -268,7 +283,7 @@ extern "C" void Destroy()
 // Returns true if this add-on use settings
 // !!! Add-on master function !!!
 //-----------------------------------------------------------------------------
-extern "C" bool HasSettings()
+extern "C" bool ADDON_HasSettings()
 {
   return true;
 }
@@ -277,16 +292,16 @@ extern "C" bool HasSettings()
 // Returns the current Status of this visualisation
 // !!! Add-on master function !!!
 //-----------------------------------------------------------------------------
-extern "C" ADDON_STATUS GetStatus()
+extern "C" ADDON_STATUS ADDON_GetStatus()
 {
-  return STATUS_OK;
+  return ADDON_STATUS_OK;
 }
 
 //-- GetSettings --------------------------------------------------------------
 // Return the settings for XBMC to display
 //-----------------------------------------------------------------------------
 
-extern "C" unsigned int GetSettings(StructSetting ***sSet)
+extern "C" unsigned int ADDON_GetSettings(ADDON_StructSetting ***sSet)
 {
   return 0;
 }
@@ -295,7 +310,7 @@ extern "C" unsigned int GetSettings(StructSetting ***sSet)
 // Free the settings struct passed from XBMC
 //-----------------------------------------------------------------------------
 
-extern "C" void FreeSettings()
+extern "C" void ADDON_FreeSettings()
 {
 }
 
@@ -322,7 +337,8 @@ void ChoosePresetPack(int pvalue)
 {
   g_UserPackFolder = false;
   if (pvalue == 0)
-    g_configPM.presetURL = "zip://special%3A%2F%2Fxbmc%2Faddons%2Fvisualization%2Eprojectm%2Fresources%2Fpresets%2Ezip";
+    g_configPM.presetURL = "/usr/share/projectm/presets";
+//      "/usr/lib/xbmc/addons/visualization.projectm/resources/presets";
   else if (pvalue == 1) //User preset folder has been chosen
     g_UserPackFolder = true;
 }
@@ -350,7 +366,8 @@ bool InitProjectM()
     else
     {
       //If it is the first run or a newly chosen preset pack we choose a random preset as first
-      globalPM->selectPreset((rand() % (globalPM->getPlaylistSize())));
+      if (globalPM->getPlaylistSize())
+        globalPM->selectPreset((rand() % (globalPM->getPlaylistSize())));
     }
     return true;
   }
@@ -364,13 +381,17 @@ bool InitProjectM()
 //-- UpdateSetting ------------------------------------------------------------
 // Handle setting change request from XBMC
 //-----------------------------------------------------------------------------
-extern "C" ADDON_STATUS SetSetting(const char* id, const void* value)
+extern "C" ADDON_STATUS ADDON_SetSetting(const char* id, const void* value)
 {
   if (!id || !value)
-    return STATUS_UNKNOWN;
+    return ADDON_STATUS_UNKNOWN;
 
   if (strcmp(id, "###GetSavedSettings") == 0) // We have some settings to be saved in the settings.xml file
   {
+    if (!globalPM)
+    {
+      return ADDON_STATUS_UNKNOWN;
+    }
     if (strcmp((char*)value, "0") == 0)
     {
       strcpy((char*)id, "lastpresetfolder");
@@ -392,7 +413,7 @@ extern "C" ADDON_STATUS SetSetting(const char* id, const void* value)
     {
       strcpy((char*)id, "###End");
     }
-    return STATUS_OK;
+    return ADDON_STATUS_OK;
   }
   // It is now time to set the settings got from xmbc
   if (strcmp(id, "quality")==0)
@@ -419,9 +440,9 @@ extern "C" ADDON_STATUS SetSetting(const char* id, const void* value)
   {
     g_configPM.beatSensitivity = *(int*)value * 2;
     if (!InitProjectM())    //The last setting value is already set so we (re)initalize
-      return STATUS_UNKNOWN;
+      return ADDON_STATUS_UNKNOWN;
   }
-  return STATUS_OK;
+  return ADDON_STATUS_OK;
 }
 
 //-- GetSubModules ------------------------------------------------------------
@@ -430,4 +451,11 @@ extern "C" ADDON_STATUS SetSetting(const char* id, const void* value)
 extern "C" unsigned int GetSubModules(char ***names)
 {
   return 0; // this vis supports 0 sub modules
+}
+
+//-- Announce -----------------------------------------------------------------
+// Receive announcements from XBMC
+//-----------------------------------------------------------------------------
+extern "C" void ADDON_Announce(const char *flag, const char *sender, const char *message, const void *data)
+{
 }
