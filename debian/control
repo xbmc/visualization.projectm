@@ -13,3 +13,11 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: ProjectM visualizer for XBMC
  ProjectM visualizer for XBMC
+
+Package: xbmc-visualization-projectm-dbg
+Section: debug
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: debug symbols for ProjectM visualizer for XBMC
+ debug symbols for ProjectM visualizer for XBMC
+
