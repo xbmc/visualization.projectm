@@ -8,8 +8,6 @@ FIND_PACKAGE(xbmc REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLEW REQUIRED)
 
-addon_version(visualization.projectm PM)
-
 ADD_DEFINITIONS(-DHAS_SDL_OPENGL)
 SET(DATA_PATH "/usr/share/xbmc/addons/visualization.projectm/resources")
 ADD_DEFINITIONS("-DDATAPATH=\"${DATAPATH}\"")
@@ -21,7 +19,7 @@ SET(INCLUDES ${OpenGL_INCLUDE_DIR}
 SET(DEPLIBS ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES})
 
-SET(SOURCES src/Main.cpp)
+SET(PM_SOURCES src/Main.cpp)
 
 FIND_PACKAGE(ProjectM)
 IF (PROJECTM_FOUND)
@@ -52,5 +50,6 @@ ENDIF(PROJECTM_FOUND)
 
 INCLUDE_DIRECTORIES(${INCLUDES})
 
-build_addon(visualization.projectm SOURCES DEPLIBS PM_VERSION)
-install_addon(visualization.projectm ${PM_VERSION})
+build_addon(visualization.projectm PM DEPLIBS)
+
+include(CPack)
