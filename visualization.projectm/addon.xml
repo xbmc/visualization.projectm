@@ -6,9 +6,9 @@
   provider-name="Team XBMC">
   <extension
     point="xbmc.player.musicviz"
-    library_linux="projectM.vis"
-    library_wingl="projectM_win32.vis"
-    library_osx="projectM.vis">
+    library_linux="visualization.projectm.so"
+    library_wingl="pvisualization.projectm.dll"
+    library_osx="visualization.projectm.so">
     <settings>
       <userdirs>
         <userdir path="special://profile/addon_data/visualization.projectm"/>
