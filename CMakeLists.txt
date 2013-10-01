@@ -51,5 +51,6 @@ ENDIF(PROJECTM_FOUND)
 INCLUDE_DIRECTORIES(${INCLUDES})
 
 build_addon(visualization.projectm PM DEPLIBS)
+add_dependencies(visualization.projectm projectM)
 
 include(CPack)
