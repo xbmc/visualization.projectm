@@ -1,5 +1,5 @@
---- cmake/FindFreetype2.orig.cmake	2013-07-17 11:47:46.844351322 +0200
-+++ cmake/FindFreetype2.cmake	2013-07-17 11:48:14.912350387 +0200
+--- projectm/cmake/FindFreetype2.orig.cmake	2013-07-17 11:47:46.844351322 +0200
++++ projectm/cmake/FindFreetype2.cmake	2013-07-17 11:48:14.912350387 +0200
 @@ -64,7 +64,7 @@
        /sw/include/freetype2
        ${VISUS_INCLUDE}

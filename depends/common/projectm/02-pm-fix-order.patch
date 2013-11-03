@@ -1,5 +1,5 @@
---- CMakeLists.orig.txt	2013-07-17 12:44:21.676238210 +0200
-+++ CMakeLists.txt	2013-07-17 12:44:03.248238823 +0200
+--- projectm/CMakeLists.orig.txt	2013-07-17 12:44:21.676238210 +0200
++++ projectm/CMakeLists.txt     2013-07-17 12:44:03.248238823 +0200
 @@ -136,8 +136,6 @@
  endif(WIN32)
  endif(APPLE)

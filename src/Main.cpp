@@ -56,7 +56,7 @@ d4rk@xbmc.org
 #include <xbmc/xbmc_vis_dll.h>
 #include <xbmc/xbmc_addon_cpp_dll.h>
 #include <GL/glew.h>
-#include "projectM.hpp"
+#include "libprojectM/projectM.hpp"
 #include <string>
 
 projectM *globalPM = NULL;

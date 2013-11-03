@@ -1,31 +1,22 @@
-#
-#
-# Try to find the PROJECTM libraries
+# - Try to find ASS
 # Once done this will define
 #
-# PROJECTM_FOUND          - system has projectM
-# PROJECTM_INCLUDE_DIR    - path to libprojectM/projectM.hpp
-# PROJECTM_LIBRARY      - the library that must be included
-#
-#
+# ASS_FOUND - system has libass
+# ASS_INCLUDE_DIRS - the libass include directory
+# ASS_LIBRARIES - The libass libraries
 
-IF (PROJECTM_LIBRARY AND PROJECTM_INCLUDE_DIR)
-  SET(PROJECTM_FOUND "YES")
-ELSE (PROJECTM_LIBRARY AND PROJECTM_INCLUDE_DIR)
-  FIND_PATH(PROJECTM_INCLUDE_DIR projectM.hpp PATHS /usr/local/include/libprojectM /usr/include/libprojectM)
-  FIND_LIBRARY(PROJECTM_LIBRARY projectM PATHS /usr/local/lib /usr/lib)
-  
-  IF (PROJECTM_INCLUDE_DIR AND PROJECTM_LIBRARY)
-    SET(PROJECTM_FOUND "YES")
-  ELSE (PROJECTM_INCLUDE_DIR AND PROJECTM_LIBRARY)
-    SET(PROJECTM_FOUND "NO")
-  ENDIF (PROJECTM_INCLUDE_DIR AND PROJECTM_LIBRARY)
-ENDIF (PROJECTM_LIBRARY AND PROJECTM_INCLUDE_DIR)
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND)
+  pkg_check_modules (PROJECTM libprojectM)
+  list(APPEND PROJECTM_INCLUDE_DIRS ${PROJECTM_INCLUDEDIR})
+endif()
 
-IF (PROJECTM_FOUND)
-  MESSAGE(STATUS "Found PROJECTM libraries at ${PROJECTM_LIBRARY} and includes at ${PROJECTM_INCLUDE_DIR}")
-ELSE (PROJECTM_FOUND)
-  IF (PROJECTM_FIND_REQUIRED)
-    MESSAGE(FATAL_ERROR "Could not find PROJECTM libraries")
-  ENDIF (PROJECTM_FIND_REQUIRED)
-ENDIF (PROJECTM_FOUND)
+if(NOT PROJECTM_FOUND)
+  find_path(PROJECTM_INCLUDE_DIRS libprojectM/projectM.hpp)
+  find_library(PROJECTM_LIBRARIES projectM)
+endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(PROJECTM DEFAULT_MSG PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES)
+
+mark_as_advanced(PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES)
