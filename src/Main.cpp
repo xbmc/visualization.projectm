@@ -55,6 +55,7 @@ d4rk@xbmc.org
 
 #include <xbmc/xbmc_vis_dll.h>
 #include <xbmc/xbmc_addon_cpp_dll.h>
+#include <xbmc/libXBMC_addon.h>
 #include <GL/glew.h>
 #include "libprojectM/projectM.hpp"
 #include <string>
@@ -78,6 +79,8 @@ bool lastLockStatus;
 int lastPresetIdx;
 unsigned int lastLoggedPresetIdx;
 
+ADDON::CHelper_libXBMC_addon *XBMC           = NULL;
+
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by XBMC. Do any setup here.
 //-----------------------------------------------------------------------------
@@ -85,6 +88,15 @@ extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
 {
   if (!props)
     return ADDON_STATUS_UNKNOWN;
+
+  if (!XBMC)
+    XBMC = new ADDON::CHelper_libXBMC_addon;
+
+  if (!XBMC->RegisterMe(hdl))
+  {
+    delete XBMC, XBMC=NULL;
+    return ADDON_STATUS_PERMANENT_FAILURE;
+  }
 
   VIS_PROPS* visprops = (VIS_PROPS*)props;
 
@@ -97,8 +109,13 @@ extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
   g_configPM.windowHeight = visprops->height;
   g_configPM.aspectCorrection = true;
   g_configPM.easterEgg = 0.0;
-  g_configPM.titleFontURL = DATAPATH"/Vera.ttf";
-  g_configPM.menuFontURL = DATAPATH"/VeraMono.ttf";
+  char path[1024];
+  XBMC->GetSetting("__addonpath__", path);
+  strcat(path,"/resources");
+  g_configPM.titleFontURL = path;
+  g_configPM.titleFontURL += "/Vera.ttf";
+  g_configPM.menuFontURL = path;
+  g_configPM.menuFontURL += "/VeraMono.ttf";
   lastLoggedPresetIdx = lastPresetIdx;
 
   return ADDON_STATUS_NEED_SAVEDSETTINGS;
@@ -334,7 +351,12 @@ void ChoosePresetPack(int pvalue)
 {
   g_UserPackFolder = false;
   if (pvalue == 0)
-    g_configPM.presetURL = DATAPATH"/presets";
+  {
+    char path[1024];
+    XBMC->GetSetting("__addonpath__", path);
+    g_configPM.presetURL = path;
+    g_configPM.presetURL += "/resources/presets";
+  }
   else if (pvalue == 1) //User preset folder has been chosen
     g_UserPackFolder = true;
 }
