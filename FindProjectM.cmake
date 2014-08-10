@@ -17,6 +17,6 @@ if(NOT PROJECTM_FOUND)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(PROJECTM DEFAULT_MSG PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES)
+find_package_handle_standard_args(ProjectM DEFAULT_MSG PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES)
 
 mark_as_advanced(PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES)
