@@ -10,8 +10,6 @@ find_package(GLEW REQUIRED)
 find_package(ProjectM REQUIRED)
 
 add_definitions(-DHAS_SDL_OPENGL)
-set(DATA_PATH "${CMAKE_INSTALL_PREFIX}/share/xbmc/addons/visualization.projectm/resources")
-add_definitions(-DDATAPATH="${DATA_PATH}")
 
 set(INCLUDES ${OpenGL_INCLUDE_DIR}
              ${GLEW_INCLUDE_DIR}
