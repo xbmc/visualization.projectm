@@ -18,12 +18,16 @@ set(INCLUDES ${OpenGL_INCLUDE_DIR}
 
 set(DEPLIBS ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES}
-            ${PROJECTM_LDFLAGS})
+            -Wl,-rpath='$ORIGIN' -L${PROJECTM_LIBRARY_DIRS} ${PROJECTM_LIBRARIES}
+            ${extra_libs})
 
 set(PM_SOURCES src/Main.cpp)
 
 include_directories(${INCLUDES})
 
 build_addon(visualization.projectm PM DEPLIBS)
+
+file(GLOB PROJECTM_SOLIB  ${PROJECTM_LIBRARY_DIRS}/lib${PROJECTM_LIBRARIES}.so*)
+install(FILES ${PROJECTM_SOLIB} DESTINATION lib)
 
 include(CPack)
