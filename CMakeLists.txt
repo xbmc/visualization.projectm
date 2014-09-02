@@ -21,7 +21,7 @@ set(INCLUDES ${OpenGL_INCLUDE_DIR}
 
 set(DEPLIBS ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES}
-            -Wl,-rpath='$ORIGIN' -L${PROJECTM_LIBRARY_DIRS} ${PROJECTM_LIBRARIES}
+            ${PROJECTM_LIBS}
             ${extra_libs})
 
 set(PM_SOURCES src/Main.cpp)
@@ -30,7 +30,8 @@ include_directories(${INCLUDES})
 
 build_addon(visualization.projectm PM DEPLIBS)
 
-file(GLOB PROJECTM_SOLIB  ${PROJECTM_LIBRARY_DIRS}/lib${PROJECTM_LIBRARIES}.so*)
-install(FILES ${PROJECTM_SOLIB} DESTINATION lib)
+if(COPY_SOLIB AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  install(FILES ${PROJECTM_SOLIB} DESTINATION lib/xbmc/addons/visualization.projectm)
+endif()
 
 include(CPack)
