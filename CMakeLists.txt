@@ -1,6 +1,6 @@
-PROJECT(visualization.projectm)
+project(visualization.projectm)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 if(PACKAGE_CONFIG_PATH)
@@ -16,7 +16,7 @@ add_definitions(-DHAS_SDL_OPENGL)
 
 set(INCLUDES ${OpenGL_INCLUDE_DIR}
              ${GLEW_INCLUDE_DIR}
-             ${XBMC_INCLUDE_DIR}
+             ${KODI_INCLUDE_DIR}
              ${PROJECTM_INCLUDE_DIRS})
 
 set(DEPLIBS ${OPENGL_LIBRARIES}
