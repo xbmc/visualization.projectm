@@ -1,23 +1,25 @@
-Source: xbmc-visualization-projectm
+Source: kodi-visualization-projectm
 Priority: extra
-Maintainer: Arne Morten Kvarving <spiff@xbmc.org>
-Build-Depends: debhelper (>= 8.0.0), cmake, xbmc-addon-dev, libprojectm-dev,
-               xbmc-visualization-dev, libgl1-mesa-dev, libglew-dev
+Maintainer: Team Kodi <contact@kodi.tv>
+Uploaders: Arne Morten Kvarving <spiff@xbmc.org>,
+           Wolfgang Schupp <wsnipex@kodi.tv>
+Build-Depends: debhelper (>= 8.0.0), cmake, kodi-addon-dev, libprojectm-dev,
+               kodi-visualization-dev, libgl1-mesa-dev, libglew-dev
 Standards-Version: 3.9.2
 Section: libs
-Homepage: http://xbmc.org
+Homepage: http://kodi.tv
 
-Package: xbmc-visualization-projectm
+Package: kodi-visualization-projectm
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: ProjectM visualizer for XBMC
- ProjectM visualizer for XBMC
+Description: ProjectM visualizer for Kodi
+ ProjectM visualizer for Kodi
 
-Package: xbmc-visualization-projectm-dbg
+Package: kodi-visualization-projectm-dbg
 Section: debug
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: debug symbols for ProjectM visualizer for XBMC
- debug symbols for ProjectM visualizer for XBMC
+Description: debug symbols for ProjectM visualizer for Kodi
+ debug symbols for ProjectM visualizer for Kodi
 
