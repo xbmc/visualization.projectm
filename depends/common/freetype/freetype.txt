@@ -1,0 +1,1 @@
+freetype http://mirrors.xbmc.org/build-deps/sources/freetype-2.4.7.tar.bz2
