@@ -24,7 +24,7 @@
  if(COMMAND cmake_policy)
         cmake_policy(SET CMP0003 NEW)
  endif(COMMAND cmake_policy)
-@@ -138,58 +130,50 @@
+@@ -138,58 +130,54 @@
  
  add_subdirectory(Renderer)
  
@@ -41,10 +41,14 @@
 -
  IF(USE_FTGL)
 -	if (FTGL_FOUND)
-+	find_package(Freetype REQUIRED)
-+	if(FREETYPE_FOUND)
-+		include_directories(${FREETYPE_INCLUDE_DIRS})
-+	endif()
++        pkg_check_modules (FREETYPE freetype2)
++        if(FREETYPE_FOUND)
++                include(FindPackageHandleStandardArgs)
++                find_package_handle_standard_args(FREETYPE DEFAULT_MSG FREETYPE_INCLUDE_DIRS FREETYPE_LIBRARIES FREETYPE_LIBRARY_DIRS)
++                set(FREETYPE2_INCLUDE_DIR ${FREETYPE_INCLUDE_DIRS})
++                include_directories(${FREETYPE_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}/include/freetype2)
++        endif()
++        message(STATUS "FREETYPE2_INCLUDE_DIR: ${FREETYPE2_INCLUDE_DIR}")
 +
 +	pkg_check_modules (FTGL ftgl)
 +	if(FTGL_FOUND)
@@ -102,4 +106,3 @@
 +	TARGET_LINK_LIBRARIES(projectM Renderer ${PRESET_FACTORY_LINK_TARGETS} ${GLEW_LINK_TARGETS} m dl ${FTGL_LINK_LIBS} ${OPENGL_LIBRARIES}  ${IMAGE_LINK_TARGETS} ${CG_LINK_TARGETS})
  
  endif(BUILD_PROJECTM_STATIC)
- 
