@@ -10,7 +10,16 @@
 # Also defined, but not for general use are:
 #  GLEW_GLEW_LIBRARY = the full path to the glew library.
 
-IF (WIN32)
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND)
+  pkg_check_modules(GLEW glew REQUIRED)
+endif()
+
+if(GLEW_FOUND)
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(GLEW DEFAULT_MSG GLEW_INCLUDE_DIRS GLEW_LIBRARIES GLEW_LIBRARIES)
+else()
+ IF (WIN32)
 
   IF(CYGWIN)
 
@@ -102,3 +111,4 @@ MARK_AS_ADVANCED(
   GLEW_Xmu_LIBRARY
   GLEW_Xi_LIBRARY
 )
+endif()
