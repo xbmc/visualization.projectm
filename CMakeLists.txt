@@ -30,8 +30,4 @@ include_directories(${INCLUDES})
 
 build_addon(visualization.projectm PM DEPLIBS)
 
-if(COPY_SOLIB AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  install(FILES ${PROJECTM_SOLIB} DESTINATION lib/kodi/addons/visualization.projectm)
-endif()
-
 include(CPack)
