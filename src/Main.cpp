@@ -53,9 +53,9 @@ d4rk@xbmc.org
 
 */
 
-#include <kodi/xbmc_vis_dll.h>
-#include <kodi/xbmc_addon_cpp_dll.h>
-#include <kodi/libXBMC_addon.h>
+#include <xbmc_vis_dll.h>
+#include <xbmc_addon_cpp_dll.h>
+#include <libXBMC_addon.h>
 #include <GL/glew.h>
 #include "libprojectM/projectM.hpp"
 #include <string>
@@ -105,8 +105,6 @@ extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
   g_configPM.meshY = gy;
   g_configPM.fps = fps;
   g_configPM.textureSize = texsize;
-  g_configPM.windowWidth = visprops->width;
-  g_configPM.windowHeight = visprops->height;
   g_configPM.aspectCorrection = true;
   g_configPM.easterEgg = 0.0;
   char path[1024];
@@ -124,9 +122,10 @@ extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
 //-- Start --------------------------------------------------------------------
 // Called when a new soundtrack is played
 //-----------------------------------------------------------------------------
-extern "C" void Start(int iChannels, int iSamplesPerSec, int iBitsPerSample, const char* szSongName)
+extern "C" void Start(int x, int y, int w, int h, void* device, float ratio,
+                      int iChannels, int iSamplesPerSec, int iBitsPerSample, const char* szSongName)
 {
-  //printf("Got Start Command\n");
+  globalPM->projectM_resetGL(w,h);
 }
 
 //-- Audiodata ----------------------------------------------------------------
@@ -268,6 +267,14 @@ extern "C" bool IsLocked()
 //-----------------------------------------------------------------------------
 extern "C" void ADDON_Stop()
 {
+}
+
+//-- Destroy-------------------------------------------------------------------
+// Do everything before unload of this add-on
+// !!! Add-on master function !!!
+//-----------------------------------------------------------------------------
+extern "C" void ADDON_Destroy()
+{
   if (globalPM)
   {
     delete globalPM;
@@ -283,14 +290,6 @@ extern "C" void ADDON_Stop()
     g_presets = NULL;
   }
   g_numPresets = 0;
-}
-
-//-- Destroy-------------------------------------------------------------------
-// Do everything before unload of this add-on
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-extern "C" void ADDON_Destroy()
-{
 }
 
 //-- HasSettings --------------------------------------------------------------
