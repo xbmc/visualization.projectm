@@ -53,9 +53,9 @@ d4rk@xbmc.org
 
 */
 
-#include <kodi/xbmc_vis_dll.h>
-#include <kodi/xbmc_addon_cpp_dll.h>
-#include <kodi/libXBMC_addon.h>
+#include <xbmc_vis_dll.h>
+#include <xbmc_addon_cpp_dll.h>
+#include <libXBMC_addon.h>
 #include <GL/glew.h>
 #include "libprojectM/projectM.hpp"
 #include <string>
