@@ -21,7 +21,15 @@ include(FindPackageHandleStandardArgs)
   # this var is not set when using system libs on linux
 if(PROJECTM_LIBRARY_DIRS)
   find_package_handle_standard_args(ProjectM DEFAULT_MSG PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES PROJECTM_LIBRARY_DIRS)
-  set(PROJECTM_LIBS -Wl,-rpath='$ORIGIN' -L${PROJECTM_LIBRARY_DIRS} ${PROJECTM_LIBRARIES})
+
+  if(APPLE)
+    set(EXTRA_LDFLAGS "-framework CoreFoundation")
+  else()
+    set(EXTRA_LDFLAGS -Wl,-rpath='$ORIGIN')
+  endif()
+
+  set(PROJECTM_LIBS ${EXTRA_LDFLAGS} -L${PROJECTM_LIBRARY_DIRS} ${PROJECTM_LIBRARIES})
+
   file(GLOB PROJECTM_SOLIB  ${PROJECTM_LIBRARY_DIRS}/lib${PROJECTM_LIBRARIES}.so*)
   set(COPY_SOLIB true)
 else()
