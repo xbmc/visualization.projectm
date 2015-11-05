@@ -8,7 +8,7 @@
     point="xbmc.player.musicviz"
     library_linux="visualization.projectm.so"
     library_wingl="pvisualization.projectm.dll"
-    library_osx="visualization.projectm.so">
+    library_osx="visualization.projectm.dylib">
     <settings>
       <userdirs>
         <userdir path="special://profile/addon_data/visualization.projectm"/>
