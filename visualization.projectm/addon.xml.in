@@ -6,9 +6,7 @@
   provider-name="Team XBMC">
   <extension
     point="xbmc.player.musicviz"
-    library_linux="visualization.projectm.so"
-    library_wingl="pvisualization.projectm.dll"
-    library_osx="visualization.projectm.dylib">
+    library_@PLATFORM@="@LIBRARY_FILENAME@"/>
     <settings>
       <userdirs>
         <userdir path="special://profile/addon_data/visualization.projectm"/>
@@ -120,6 +118,6 @@
     <description lang="vi">projectM là chương trình trình chiếu nhạc tuyệt vời. Không có gì tuyệt hơn nó trong thế giới Unix. Sự tuyệt vời của projectM đến từ thành quả vất vả của cộng đồng. Những người sử dụng như bạn có thể tạo ra những bộ preset mà kết nối âm nhạc với hiệu ứng hình ảnh tuyệt vời. Hãy thử nó!\n Chương trình này là một phiên bản LGPL được phát triển dựa trên Milkdrop qua OpenGL\n Tất cả bạn cần chỉ là một card đồ họa 3D và bài hát ưa thích của mình.</description>
     <description lang="zh">projectM 是一个音乐可视化效果。它是 Unix 世界中最好的。它的伟大来自于社区的辛苦工作。使用者可以创建预设参数把音乐和难以置信的可视化效果连接起来。试试吧！&#10;projectM 可视化效果是用 OpenGL 按照 LGPL 协议对 Milkdrop 的重新实现&#10;projectM 所要求的仅是一块有 3D 加速功能的显卡和你喜爱的音乐。</description>
     <description lang="zh_TW">projectM是一個令人驚豔的音樂視覺效果。它是Unix世界中最好的。projectM的偉大成果來自於社群創作者的投入與心血。使用者可以創建把音樂和難以置信的視覺效果連接起來的預設值。快來嘗鮮一下吧！&#10;projectM視覺效果是用OpenGL按照LGPL協議對Milkdrop的重新實現&#10;projectM所要求的僅是一張有3D加速功能的影像顯示卡和您喜愛的音樂。</description>
-    <platform>linux osx wingl</platform>
+    <platform>@PLATFORM@</platform>
   </extension>
 </addon>
