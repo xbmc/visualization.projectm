@@ -9,18 +9,24 @@ endif()
 
 find_package(kodi REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
+
+if(NOT APPLE)
+  find_package(GLEW REQUIRED)
+  set(EXTRA_INCLUDES ${GLEW_INCLUDE_DIR})
+  set(EXTRA_LIBRARIES ${GLEW_LIBRARIES})
+endif()
+
 find_package(ProjectM REQUIRED)
 
 add_definitions(-DHAS_SDL_OPENGL)
 
 set(INCLUDES ${OpenGL_INCLUDE_DIR}
-             ${GLEW_INCLUDE_DIR}
+             ${EXTRA_INCLUDES}
              ${KODI_INCLUDE_DIR}
              ${PROJECTM_INCLUDE_DIRS})
 
 set(DEPLIBS ${OPENGL_LIBRARIES}
-            ${GLEW_LIBRARIES}
+            ${EXTRA_LIBRARIES}
             ${PROJECTM_LIBS}
             ${extra_libs})
 

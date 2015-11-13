@@ -56,7 +56,11 @@ d4rk@xbmc.org
 #include <xbmc_vis_dll.h>
 #include <xbmc_addon_cpp_dll.h>
 #include <libXBMC_addon.h>
+
+#if !defined(__APPLE__)
 #include <GL/glew.h>
+#endif
+
 #include "libprojectM/projectM.hpp"
 #include <string>
 
