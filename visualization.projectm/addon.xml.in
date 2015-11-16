@@ -6,7 +6,7 @@
   provider-name="Team XBMC">
   <extension
     point="xbmc.player.musicviz"
-    library_@PLATFORM@="@LIBRARY_FILENAME@"/>
+    library_@PLATFORM@="@LIBRARY_FILENAME@">
     <settings>
       <userdirs>
         <userdir path="special://profile/addon_data/visualization.projectm"/>
