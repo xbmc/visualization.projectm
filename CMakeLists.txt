@@ -7,7 +7,7 @@ if(PACKAGE_CONFIG_PATH)
   set(ENV{PKG_CONFIG_PATH} ${PACKAGE_CONFIG_PATH})
 endif()
 
-find_package(kodi REQUIRED)
+find_package(Kodi REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(NOT APPLE)
