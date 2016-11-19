@@ -8,6 +8,7 @@ if(PACKAGE_CONFIG_PATH)
 endif()
 
 find_package(Kodi REQUIRED)
+find_package(p8-platform REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(NOT APPLE)
@@ -23,6 +24,7 @@ add_definitions(-DHAS_SDL_OPENGL)
 set(INCLUDES ${OpenGL_INCLUDE_DIR}
              ${EXTRA_INCLUDES}
              ${KODI_INCLUDE_DIR}
+             ${p8-platform_INCLUDE_DIRS}
              ${PROJECTM_INCLUDE_DIRS})
 
 set(DEPLIBS ${OPENGL_LIBRARIES}

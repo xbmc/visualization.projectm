@@ -56,6 +56,7 @@ d4rk@xbmc.org
 #include <xbmc_vis_dll.h>
 #include <xbmc_addon_cpp_dll.h>
 #include <libXBMC_addon.h>
+#include <threads/mutex.h>
 
 #if !defined(__APPLE__)
 #include <GL/glew.h>
@@ -64,6 +65,7 @@ d4rk@xbmc.org
 #include "libprojectM/projectM.hpp"
 #include <string>
 
+P8PLATFORM::CMutex pmMutex;
 projectM *globalPM = NULL;
 
 // some projectm globals
@@ -138,6 +140,7 @@ extern "C" void Start(int iChannels, int iSamplesPerSec, int iBitsPerSample, con
 //-----------------------------------------------------------------------------
 extern "C" void AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
 {
+  P8PLATFORM::CLockObject lock(pmMutex);
   if (globalPM)
     globalPM->pcm()->addPCMfloat(pAudioData, iAudioDataLength);
 }
@@ -147,6 +150,7 @@ extern "C" void AudioData(const float* pAudioData, int iAudioDataLength, float *
 //-----------------------------------------------------------------------------
 extern "C" void Render()
 {
+  P8PLATFORM::CLockObject lock(pmMutex);
   if (globalPM)
   {
     globalPM->renderFrame();
@@ -176,6 +180,7 @@ extern "C" void GetInfo(VIS_INFO* pInfo)
 extern "C" bool OnAction(long flags, const void *param)
 {
   bool ret = false;
+  P8PLATFORM::CLockObject lock(pmMutex);
 
   if (!globalPM)
     return false;
@@ -226,6 +231,7 @@ extern "C" bool OnAction(long flags, const void *param)
 //-----------------------------------------------------------------------------
 extern "C" unsigned int GetPresets(char ***presets)
 {
+  P8PLATFORM::CLockObject lock(pmMutex);
   g_numPresets = globalPM ? globalPM->getPlaylistSize() : 0;
   if (g_numPresets > 0)
   {
@@ -249,6 +255,7 @@ extern "C" unsigned GetPreset()
   if (g_presets)
   {
     unsigned preset;
+    P8PLATFORM::CLockObject lock(pmMutex);
     if(globalPM && globalPM->selectedPresetIndex(preset))
       return preset;
   }
@@ -260,6 +267,7 @@ extern "C" unsigned GetPreset()
 //-----------------------------------------------------------------------------
 extern "C" bool IsLocked()
 {
+  P8PLATFORM::CLockObject lock(pmMutex);
   if(globalPM)
     return globalPM->isPresetLocked();
   else
@@ -272,6 +280,7 @@ extern "C" bool IsLocked()
 //-----------------------------------------------------------------------------
 extern "C" void ADDON_Stop()
 {
+  P8PLATFORM::CLockObject lock(pmMutex);
   if (globalPM)
   {
     delete globalPM;
@@ -376,7 +385,8 @@ void ChooseUserPresetFolder(std::string pvalue)
 
 bool InitProjectM()
 {
-  if (globalPM) delete globalPM; //We are re-initalizing the engine
+  P8PLATFORM::CLockObject lock(pmMutex);
+  delete globalPM; //We are re-initializing the engine
   try
   {
     globalPM = new projectM(g_configPM);
@@ -408,6 +418,7 @@ extern "C" ADDON_STATUS ADDON_SetSetting(const char* id, const void* value)
   if (!id || !value)
     return ADDON_STATUS_UNKNOWN;
 
+  P8PLATFORM::CLockObject lock(pmMutex);
   if (strcmp(id, "###GetSavedSettings") == 0) // We have some settings to be saved in the settings.xml file
   {
     if (!globalPM)
