@@ -59,7 +59,7 @@ d4rk@xbmc.org
 #include <threads/mutex.h>
 
 #if !defined(__APPLE__)
-#include <GL/glew.h>
+#include <GL/gl.h>
 #endif
 
 #include "libprojectM/projectM.hpp"

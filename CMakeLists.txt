@@ -12,7 +12,7 @@ find_package(p8-platform REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(NOT APPLE)
-  find_package(GLEW REQUIRED)
+  #find_package(GLEW REQUIRED)
   set(EXTRA_INCLUDES ${GLEW_INCLUDE_DIR})
   set(EXTRA_LIBRARIES ${GLEW_LIBRARIES})
 endif()
@@ -28,6 +28,7 @@ set(INCLUDES ${OpenGL_INCLUDE_DIR}
              ${PROJECTM_INCLUDE_DIRS})
 
 set(DEPLIBS ${OPENGL_LIBRARIES}
+  #${GLEW_LIBRARIES}
             ${EXTRA_LIBRARIES}
             ${PROJECTM_LIBS}
             ${extra_libs})
