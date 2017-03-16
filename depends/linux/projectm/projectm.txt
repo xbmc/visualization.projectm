@@ -1,1 +1,1 @@
-projectm http://heanet.dl.sourceforge.net/project/projectm/libprojectM/libprojectM-2.0.0/libprojectM-2.0.0-Source.tar.gz
+projectm https://sourceforge.net/projects/projectm/files/libprojectM/libprojectM-2.0.0/libprojectM-2.0.0-Source.tar.gz
