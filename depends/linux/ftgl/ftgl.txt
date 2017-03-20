@@ -1,1 +1,1 @@
-ftgl http://heanet.dl.sourceforge.net/project/ftgl/FTGL%20Source/2.1.2/ftgl-2.1.2.tar.gz
+ftgl https://sourceforge.net/projects/ftgl/files/FTGL%20Source/2.1.2/ftgl-2.1.2.tar.gz
