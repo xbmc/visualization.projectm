@@ -1,0 +1,10 @@
+--- projectm/Common.hpp.orig	2009-12-01 07:38:42.000000000 +0100
++++ projectm/Common.hpp	2017-05-15 15:41:12.743838926 +0200
+@@ -55,6 +55,7 @@
+ 
+ #ifdef LINUX
+ #include <cstdlib>
++#include <math.h>
+ #define projectM_isnan isnan
+ 
+ #endif
