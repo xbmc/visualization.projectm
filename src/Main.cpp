@@ -103,7 +103,7 @@ extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
     return ADDON_STATUS_PERMANENT_FAILURE;
   }
 
-  VIS_PROPS* visprops = (VIS_PROPS*)props;
+  AddonProps_Visualization* visprops = (AddonProps_Visualization*)props;
 
   strcpy(g_visName, visprops->name);
   g_configPM.meshX = gx;
@@ -277,7 +277,7 @@ extern "C" bool IsLocked()
 // Do everything before unload of this add-on
 // !!! Add-on master function !!!
 //-----------------------------------------------------------------------------
-extern "C" void ADDON_Stop()
+extern "C" void Stop()
 {
   P8PLATFORM::CLockObject lock(pmMutex);
   if (globalPM)
