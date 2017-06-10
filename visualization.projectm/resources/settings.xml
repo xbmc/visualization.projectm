@@ -2,7 +2,7 @@
     <setting id="preset pack" label="30009" type="enum" lvalues="30010|30011" default="0"/>
     <setting id="user preset folder" label="30012" type="folder" default="" visible="eq(-1,1)" />
     <setting id="lastpresetfolder" type="text" default="" visible="false" />
-    <setting id="lastpresetidx" type="integer" default="0" visible="false" />
+    <setting id="lastpresetidx" type="number" option="int" default="0" visible="false" />
     <setting id="lastlockedstatus" type="bool" default="false" visible="false" />
     <setting id="quality" label="30000" type="enum" lvalues="30001|30002|30003|30004" default="0"/>
     <setting id="shuffle" type="bool" label="30005" default="true"/>

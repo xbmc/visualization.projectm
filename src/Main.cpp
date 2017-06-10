@@ -53,408 +53,304 @@ d4rk@xbmc.org
 
 */
 
-#include <xbmc_vis_dll.h>
-#include <libXBMC_addon.h>
+#include <kodi/addon-instance/Visualization.h>
 #include <threads/mutex.h>
 
 #if !defined(__APPLE__)
 #include <GL/gl.h>
 #endif
 
-#include "libprojectM/projectM.hpp"
-#include <string>
+#include <libprojectM/projectM.hpp>
 
-P8PLATFORM::CMutex pmMutex;
-projectM *globalPM = NULL;
+class CVisualizationProjectM
+  : public kodi::addon::CAddonBase,
+    public kodi::addon::CInstanceVisualization
+{
+public:
+  CVisualizationProjectM();
+  virtual ~CVisualizationProjectM();
 
-// some projectm globals
-int maxSamples=512;
-int texsize=512;
-int gx=40,gy=30;
-int fps=100;
-char *disp;
-char g_visName[512];
-char **g_presets=NULL;
-unsigned int g_numPresets = 0;
-projectM::Settings g_configPM;
+  virtual void Render() override;
+  virtual void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
+  virtual bool GetPresets(std::vector<std::string>& presets) override;
+  virtual bool LoadPreset(int select) override;
+  virtual bool PrevPreset();
+  virtual bool NextPreset();
+  virtual bool LockPreset(bool lockUnlock);
+  virtual int GetActivePreset() override;
+  virtual bool RandomPreset() override;
+  virtual bool IsLocked() override;
+  virtual ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
 
-bool g_UserPackFolder;
-char lastPresetDir[1024];
-bool lastLockStatus;
-int lastPresetIdx;
-unsigned int lastLoggedPresetIdx;
+private:
+  bool InitProjectM();
+  void ChoosePresetPack(int pvalue);
+  void ChooseUserPresetFolder(std::string pvalue);
 
-ADDON::CHelper_libXBMC_addon *XBMC           = NULL;
+  projectM *m_projectM;
+  projectM::Settings m_configPM;
+  P8PLATFORM::CMutex m_pmMutex;
+  bool m_UserPackFolder;
+  std::string m_lastPresetDir;
+  int m_lastPresetIdx;
+  unsigned int m_lastLoggedPresetIdx;
+  bool m_lastLockStatus;
+
+  // some projectm globals
+  const static int maxSamples=512;
+  const static int texsize=512;
+  const static int gx=40,gy=30;
+  const static int fps=100;
+};
 
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by XBMC. Do any setup here.
 //-----------------------------------------------------------------------------
-extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
+CVisualizationProjectM::CVisualizationProjectM()
+  : m_projectM(nullptr),
+    m_UserPackFolder(false)
 {
-  if (!props)
-    return ADDON_STATUS_UNKNOWN;
+  m_configPM.meshX = gx;
+  m_configPM.meshY = gy;
+  m_configPM.fps = fps;
+  m_configPM.windowWidth = Width();
+  m_configPM.windowHeight = Height();
+  m_configPM.aspectCorrection = true;
+  m_configPM.easterEgg = 0.0;
+  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/Vera.ttf";
+  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/VeraMono.ttf";
+  m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
+  m_lastLoggedPresetIdx = m_lastPresetIdx;
 
-  if (!XBMC)
-    XBMC = new ADDON::CHelper_libXBMC_addon;
+  m_configPM.textureSize = kodi::GetSettingInt("quality");
+  m_configPM.shuffleEnabled = kodi::GetSettingBoolean("shuffle");
 
-  if (!XBMC->RegisterMe(hdl))
-  {
-    delete XBMC, XBMC=NULL;
-    return ADDON_STATUS_PERMANENT_FAILURE;
-  }
+  m_lastLockStatus = kodi::GetSettingBoolean("last_locked_status");
+  m_lastPresetDir = kodi::GetSettingString("last_preset_folder");
+  m_configPM.smoothPresetDuration = kodi::GetSettingInt("smooth_duration");
+  m_configPM.presetDuration = kodi::GetSettingInt("preset_duration");
 
-  AddonProps_Visualization* visprops = (AddonProps_Visualization*)props;
+  ChoosePresetPack(kodi::GetSettingInt("preset_pack"));
+  std::string presetFolder = kodi::GetSettingString("user_preset_folder");
+  if (!presetFolder.empty())
+    ChooseUserPresetFolder(presetFolder);
+  m_configPM.beatSensitivity = kodi::GetSettingInt("beat_sens") * 2;
 
-  strcpy(g_visName, visprops->name);
-  g_configPM.meshX = gx;
-  g_configPM.meshY = gy;
-  g_configPM.fps = fps;
-  g_configPM.textureSize = texsize;
-  g_configPM.windowWidth = visprops->width;
-  g_configPM.windowHeight = visprops->height;
-  g_configPM.aspectCorrection = true;
-  g_configPM.easterEgg = 0.0;
-  char path[1024];
-  XBMC->GetSetting("__addonpath__", path);
-  strcat(path,"/resources");
-  g_configPM.titleFontURL = path;
-  g_configPM.titleFontURL += "/Vera.ttf";
-  g_configPM.menuFontURL = path;
-  g_configPM.menuFontURL += "/VeraMono.ttf";
-  lastLoggedPresetIdx = lastPresetIdx;
-
-  return ADDON_STATUS_NEED_SAVEDSETTINGS;
+  InitProjectM();
 }
 
-//-- Start --------------------------------------------------------------------
-// Called when a new soundtrack is played
-//-----------------------------------------------------------------------------
-extern "C" void Start(int iChannels, int iSamplesPerSec, int iBitsPerSample, const char* szSongName)
+CVisualizationProjectM::~CVisualizationProjectM()
 {
-  //printf("Got Start Command\n");
+  unsigned int lastindex = 0;
+  m_projectM->selectedPresetIndex(lastindex);
+  kodi::SetSettingInt("lastpresetidx", lastindex);
+  kodi::SetSettingString("lastpresetfolder", m_projectM->settings().presetURL);
+  kodi::SetSettingBoolean("lastlockedstatus", m_projectM->isPresetLocked());
+
+  if (m_projectM)
+  {
+    delete m_projectM;
+    m_projectM = nullptr;
+  }
 }
 
 //-- Audiodata ----------------------------------------------------------------
 // Called by XBMC to pass new audio data to the vis
 //-----------------------------------------------------------------------------
-extern "C" void AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
+void CVisualizationProjectM::AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
 {
-  P8PLATFORM::CLockObject lock(pmMutex);
-  if (globalPM)
-    globalPM->pcm()->addPCMfloat(pAudioData, iAudioDataLength);
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  if (m_projectM)
+    m_projectM->pcm()->addPCMfloat(pAudioData, iAudioDataLength);
 }
 
 //-- Render -------------------------------------------------------------------
 // Called once per frame. Do all rendering here.
 //-----------------------------------------------------------------------------
-extern "C" void Render()
+void CVisualizationProjectM::Render()
 {
-  P8PLATFORM::CLockObject lock(pmMutex);
-  if (globalPM)
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  if (m_projectM)
   {
-    globalPM->renderFrame();
-    if (g_presets)
-    {
+    m_projectM->renderFrame();
       unsigned preset;
-      globalPM->selectedPresetIndex(preset);
-//      if (lastLoggedPresetIdx != preset)
+      m_projectM->selectedPresetIndex(preset);
+//      if (m_lastLoggedPresetIdx != preset)
 //        CLog::Log(LOGDEBUG,"PROJECTM - Changed preset to: %s",g_presets[preset]);
-      lastLoggedPresetIdx = preset;
-    }
+      m_lastLoggedPresetIdx = preset;
   }
 }
 
-//-- GetInfo ------------------------------------------------------------------
-// Tell XBMC our requirements
-//-----------------------------------------------------------------------------
-extern "C" void GetInfo(VIS_INFO* pInfo)
+bool CVisualizationProjectM::LoadPreset(int select)
 {
-  pInfo->bWantsFreq = false;
-  pInfo->iSyncDelay = 0;
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  m_projectM->selectPreset(select);
+  return true;
 }
 
-//-- OnAction -----------------------------------------------------------------
-// Handle XBMC actions such as next preset, lock preset, album art changed etc
-//-----------------------------------------------------------------------------
-extern "C" bool OnAction(long flags, const void *param)
+bool CVisualizationProjectM::PrevPreset()
 {
-  bool ret = false;
-  P8PLATFORM::CLockObject lock(pmMutex);
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+//  switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
+  if (!m_projectM->isShuffleEnabled())
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+  else
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+}
 
-  if (!globalPM)
-    return false;
+bool CVisualizationProjectM::NextPreset()
+{
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+//  switchPreset(ALPHA_NEXT, SOFT_CUT);
+  if (!m_projectM->isShuffleEnabled())
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+  else
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+  return true;
+}
 
-  if (flags == VIS_ACTION_LOAD_PRESET && param)
-  {
-    int pindex = *((int *)param);
-    globalPM->selectPreset(pindex);
-    ret = true;
-  }
-  else if (flags == VIS_ACTION_NEXT_PRESET)
-  {
-//    switchPreset(ALPHA_NEXT, SOFT_CUT);
-    if (!globalPM->isShuffleEnabled())
-      globalPM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
-    else
-      globalPM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
-    ret = true;
-  }
-  else if (flags == VIS_ACTION_PREV_PRESET)
-  {
-//    switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
-    if (!globalPM->isShuffleEnabled())
-      globalPM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
-    else
-      globalPM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+bool CVisualizationProjectM::RandomPreset()
+{
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  m_projectM->setShuffleEnabled(m_configPM.shuffleEnabled);
+  return true; 
+}
 
-    ret = true;
-  }
-  else if (flags == VIS_ACTION_RANDOM_PRESET)
-  {
-    globalPM->setShuffleEnabled(g_configPM.shuffleEnabled);
-    ret = true;
-  }
-  else if (flags == VIS_ACTION_LOCK_PRESET)
-  {
-    globalPM->setPresetLock(!globalPM->isPresetLocked());
-    unsigned preset;
-    globalPM->selectedPresetIndex(preset);
-    globalPM->selectPreset(preset);
-    ret = true;
-  }
-  return ret;
+bool CVisualizationProjectM::LockPreset(bool lockUnlock)
+{
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  m_projectM->setPresetLock(lockUnlock);
+  unsigned preset;
+  m_projectM->selectedPresetIndex(preset);
+  m_projectM->selectPreset(preset);
+  return true; 
 }
 
 //-- GetPresets ---------------------------------------------------------------
 // Return a list of presets to XBMC for display
 //-----------------------------------------------------------------------------
-extern "C" unsigned int GetPresets(char ***presets)
+bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 {
-  P8PLATFORM::CLockObject lock(pmMutex);
-  g_numPresets = globalPM ? globalPM->getPlaylistSize() : 0;
-  if (g_numPresets > 0)
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  int numPresets = m_projectM ? m_projectM->getPlaylistSize() : 0;
+  if (numPresets > 0)
   {
-    g_presets = (char**) malloc(sizeof(char*)*g_numPresets);
-    for (unsigned i = 0; i < g_numPresets; i++)
-    {
-      g_presets[i] = (char*) malloc(strlen(globalPM->getPresetName(i).c_str())+2);
-      if (g_presets[i])
-        strcpy(g_presets[i], globalPM->getPresetName(i).c_str());
-    }
-    *presets = g_presets;
+    for (unsigned i = 0; i < numPresets; i++)
+      presets.push_back(m_projectM->getPresetName(i));
   }
-  return g_numPresets;
+  return (numPresets > 0) ? true : false;
 }
 
 //-- GetPreset ----------------------------------------------------------------
 // Return the index of the current playing preset
 //-----------------------------------------------------------------------------
-extern "C" unsigned GetPreset()
+int CVisualizationProjectM::GetActivePreset()
 {
-  if (g_presets)
-  {
-    unsigned preset;
-    P8PLATFORM::CLockObject lock(pmMutex);
-    if(globalPM && globalPM->selectedPresetIndex(preset))
-      return preset;
-  }
+  unsigned preset;
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  if(m_projectM && m_projectM->selectedPresetIndex(preset))
+    return preset;
+
   return 0;
 }
 
 //-- IsLocked -----------------------------------------------------------------
 // Returns true if this add-on use settings
 //-----------------------------------------------------------------------------
-extern "C" bool IsLocked()
+bool CVisualizationProjectM::IsLocked()
 {
-  P8PLATFORM::CLockObject lock(pmMutex);
-  if(globalPM)
-    return globalPM->isPresetLocked();
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  if(m_projectM)
+    return m_projectM->isPresetLocked();
   else
     return false;
-}
-
-//-- Stop ---------------------------------------------------------------------
-// Do everything before unload of this add-on
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-extern "C" void Stop()
-{
-  P8PLATFORM::CLockObject lock(pmMutex);
-  if (globalPM)
-  {
-    delete globalPM;
-    globalPM = NULL;
-  }
-  if (g_presets)
-  {
-    for (unsigned i = 0; i <g_numPresets; i++)
-    {
-      free(g_presets[i]);
-    }
-    free(g_presets);
-    g_presets = NULL;
-  }
-  g_numPresets = 0;
-}
-
-//-- Destroy-------------------------------------------------------------------
-// Do everything before unload of this add-on
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-extern "C" void ADDON_Destroy()
-{
-}
-
-//-- GetStatus ---------------------------------------------------------------
-// Returns the current Status of this visualisation
-// !!! Add-on master function !!!
-//-----------------------------------------------------------------------------
-extern "C" ADDON_STATUS ADDON_GetStatus()
-{
-  return ADDON_STATUS_OK;
-}
-
-void ChooseQuality (int pvalue)
-{
-  switch (pvalue)
-  {
-    case 0:
-      g_configPM.textureSize = 256;
-      break;
-    case 1:
-      g_configPM.textureSize = 512;
-      break;
-    case 2:
-      g_configPM.textureSize = 1024;
-      break;
-    case 3:
-      g_configPM.textureSize = 2048;
-      break;
-  }
-}
-
-void ChoosePresetPack(int pvalue)
-{
-  g_UserPackFolder = false;
-  if (pvalue == 0)
-  {
-    char path[1024];
-    XBMC->GetSetting("__addonpath__", path);
-    g_configPM.presetURL = path;
-    g_configPM.presetURL += "/resources/presets";
-  }
-  else if (pvalue == 1) //User preset folder has been chosen
-    g_UserPackFolder = true;
-}
-
-void ChooseUserPresetFolder(std::string pvalue)
-{
-  if (g_UserPackFolder)
-  {
-    pvalue.erase(pvalue.length()-1,1);  //Remove "/" from the end
-    g_configPM.presetURL = pvalue;
-  }
-}
-
-bool InitProjectM()
-{
-  P8PLATFORM::CLockObject lock(pmMutex);
-  delete globalPM; //We are re-initializing the engine
-  try
-  {
-    globalPM = new projectM(g_configPM);
-    if (g_configPM.presetURL == lastPresetDir)  //If it is not the first run AND if this is the same preset pack as last time
-    {
-      globalPM->setPresetLock(lastLockStatus);
-      globalPM->selectPreset(lastPresetIdx);
-    }
-    else
-    {
-      //If it is the first run or a newly chosen preset pack we choose a random preset as first
-      if (globalPM->getPlaylistSize())
-        globalPM->selectPreset((rand() % (globalPM->getPlaylistSize())));
-    }
-    return true;
-  }
-  catch (...)
-  {
-    printf("exception in projectM ctor");
-    return false;
-  }
 }
 
 //-- UpdateSetting ------------------------------------------------------------
 // Handle setting change request from XBMC
 //-----------------------------------------------------------------------------
-extern "C" ADDON_STATUS ADDON_SetSetting(const char* id, const void* value)
+ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue)
 {
-  if (!id || !value)
+  if (settingName.empty() || settingValue.empty())
     return ADDON_STATUS_UNKNOWN;
 
-  P8PLATFORM::CLockObject lock(pmMutex);
-  if (strcmp(id, "###GetSavedSettings") == 0) // We have some settings to be saved in the settings.xml file
-  {
-    if (!globalPM)
-    {
-      return ADDON_STATUS_UNKNOWN;
-    }
-    if (strcmp((char*)value, "0") == 0)
-    {
-      strcpy((char*)id, "lastpresetfolder");
-      strcpy((char*)value, globalPM->settings().presetURL.c_str());
-    }
-    if (strcmp((char*)value, "1") == 0)
-    {
-      strcpy((char*)id, "lastlockedstatus");
-      strcpy((char*)value, (globalPM->isPresetLocked() ? "true" : "false"));
-    }
-    if (strcmp((char*)value, "2") == 0)
-    {
-      strcpy((char*)id, "lastpresetidx");
-      unsigned int lastindex;
-      globalPM->selectedPresetIndex(lastindex);
-      sprintf ((char*)value, "%i", (int)lastindex);
-    }
-    if (strcmp((char*)value, "3") == 0)
-    {
-      strcpy((char*)id, "###End");
-    }
-    return ADDON_STATUS_OK;
-  }
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+
   // It is now time to set the settings got from xmbc
-  if (strcmp(id, "quality")==0)
-    ChooseQuality (*(int*)value);
-  else if (strcmp(id, "shuffle")==0)
-    g_configPM.shuffleEnabled = *(bool*)value;
-  
-  else if (strcmp(id, "lastpresetidx")==0)
-    lastPresetIdx = *(int*)value;
-  else if (strcmp(id, "lastlockedstatus")==0)
-    lastLockStatus = *(bool*)value;
-  else if (strcmp(id, "lastpresetfolder")==0)
-    strcpy(lastPresetDir, (char*)value);
-  
-  else if (strcmp(id, "smooth_duration")==0)
-    g_configPM.smoothPresetDuration = (*(int*)value * 5 + 5);
-  else if (strcmp(id, "preset_duration")==0)
-    g_configPM.presetDuration = (*(int*)value * 5 + 5);
-  else if (strcmp(id, "preset pack")==0)
-    ChoosePresetPack(*(int*)value);
-  else if (strcmp(id, "user preset folder") == 0)
-    ChooseUserPresetFolder((char*)value);
-  else if (strcmp(id, "beat_sens")==0)
+  if (settingName == "quality")
+    m_configPM.textureSize = settingValue.GetInt();
+  else if (settingName == "shuffle")
+    m_configPM.shuffleEnabled = settingValue.GetBoolean();
+  else if (settingName == "last_preset_idx")
+    m_lastPresetIdx = settingValue.GetInt();
+  else if (settingName == "last_locked_status")
+    m_lastLockStatus = settingValue.GetBoolean();
+  else if (settingName == "last_preset_folder")
+    m_lastPresetDir = settingValue.GetString();
+  else if (settingName == "smooth_duration")
+    m_configPM.smoothPresetDuration = (settingValue.GetInt() * 5 + 5);
+  else if (settingName == "preset_duration")
+    m_configPM.presetDuration = (settingValue.GetInt() * 5 + 5);
+  else if (settingName == "preset_pack")
+    ChoosePresetPack(settingValue.GetInt());
+  else if (settingName == "user_preset_folder")
+    ChooseUserPresetFolder(settingValue.GetString());
+  else if (settingName == "beat_sens")
+    m_configPM.beatSensitivity = settingValue.GetInt() * 2;
+
+  if (settingName == "beat_sens") // becomes changed in future by a additional value on function
   {
-    g_configPM.beatSensitivity = *(int*)value * 2;
     if (!InitProjectM())    //The last setting value is already set so we (re)initalize
       return ADDON_STATUS_UNKNOWN;
   }
   return ADDON_STATUS_OK;
 }
 
-//-- GetSubModules ------------------------------------------------------------
-// Return any sub modules supported by this vis
-//-----------------------------------------------------------------------------
-extern "C" unsigned int GetSubModules(char ***names)
+bool CVisualizationProjectM::InitProjectM()
 {
-  return 0; // this vis supports 0 sub modules
+  P8PLATFORM::CLockObject lock(m_pmMutex);
+  delete m_projectM; //We are re-initializing the engine
+  try
+  {
+    m_projectM = new projectM(m_configPM);
+    if (m_configPM.presetURL == m_lastPresetDir)  //If it is not the first run AND if this is the same preset pack as last time
+    {
+      m_projectM->setPresetLock(m_lastLockStatus);
+      m_projectM->selectPreset(m_lastPresetIdx);
+    }
+    else
+    {
+      //If it is the first run or a newly chosen preset pack we choose a random preset as first
+      if (m_projectM->getPlaylistSize())
+        m_projectM->selectPreset((rand() % (m_projectM->getPlaylistSize())));
+    }
+    return true;
+  }
+  catch (...)
+  {
+    kodi::Log(ADDON_LOG_FATAL, "exception in projectM ctor");
+    return false;
+  }
 }
+
+void CVisualizationProjectM::ChoosePresetPack(int pvalue)
+{
+  m_UserPackFolder = false;
+  if (pvalue == 0)
+  {
+    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/presets";
+  }
+  else if (pvalue == 1) //User preset folder has been chosen
+    m_UserPackFolder = true;
+}
+
+void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
+{
+  if (m_UserPackFolder)
+  {
+    pvalue.erase(pvalue.length()-1,1);  //Remove "/" from the end
+    m_configPM.presetURL = pvalue;
+  }
+}
+
+ADDONCREATOR(CVisualizationProjectM)

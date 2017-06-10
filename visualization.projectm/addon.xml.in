@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="visualization.projectm"
-  version="1.2.4"
+  version="2.0.0"
   name="projectM"
   provider-name="Team XBMC">
   <requires>@ADDON_DEPENDS@</requires>
