@@ -33,9 +33,9 @@ msgid "Maximum"
 msgstr "ከፍተኛ"
 
 msgctxt "#30050"
-msgid "%2.0f secs"
-msgstr "%2.0f secs"
+msgid "{0:d} sec"
+msgstr "{0:d} sec"
 
 msgctxt "#30051"
-msgid "%2.0f %%"
-msgstr "%2.0f %%"
+msgid "{0:d} %"
+msgstr "{0:d} %"
