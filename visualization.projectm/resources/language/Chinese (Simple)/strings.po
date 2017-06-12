@@ -69,9 +69,9 @@ msgid "User Preset Folder"
 msgstr "用户预置文件夹"
 
 msgctxt "#30050"
-msgid "%2.0f secs"
-msgstr "%2.0f 秒"
+msgid "{0:d} sec"
+msgstr "{0:d} 秒"
 
 msgctxt "#30051"
-msgid "%2.0f %%"
-msgstr "%2.0f %%"
+msgid "{0:d} %"
+msgstr "{0:d} %"
