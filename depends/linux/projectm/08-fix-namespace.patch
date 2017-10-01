@@ -1,0 +1,11 @@
+--- a/Common.hpp
++++ b/Common.hpp
+@@ -55,7 +55,7 @@
+ 
+ #ifdef LINUX
+ #include <cstdlib>
+-#define projectM_isnan isnan
++#define projectM_isnan std::isnan
+ 
+ #endif
+ 
