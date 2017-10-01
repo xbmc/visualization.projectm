@@ -1,0 +1,84 @@
+From a42a4635332b254bf17d48674432059925ce2d01 Mon Sep 17 00:00:00 2001
+From: Arne Morten Kvarving <arne.morten.kvarving@sintef.no>
+Date: Sun, 1 Oct 2017 21:14:02 +0200
+Subject: [PATCH 6/6] remove glew usage
+
+not compatible with EGL
+---
+ src/libprojectM/CMakeLists.txt          | 4 ++--
+ src/libprojectM/Renderer/CMakeLists.txt | 2 +-
+ src/libprojectM/Renderer/FBO.cpp        | 4 ++--
+ src/libprojectM/Renderer/FBO.hpp        | 5 ++++-
+ 4 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/src/libprojectM/CMakeLists.txt b/src/libprojectM/CMakeLists.txt
+index 065eb06..faaded8 100644
+--- a/src/libprojectM/CMakeLists.txt
++++ b/src/libprojectM/CMakeLists.txt
+@@ -196,7 +196,7 @@ if(BUILD_PROJECTM_STATIC)
+ 				${IMAGE_LINK_TARGETS}
+ 				${CG_LINK_TARGETS}
+ 				${PRESET_FACTORY_LINK_TARGETS}
+-				${GLEW_LIBRARY}
++                                #${GLEW_LIBRARY}
+ 				${FTGL_LINK_TARGETS}
+ 				${MATH_LIBRARIES}
+ 				dl
+@@ -207,7 +207,7 @@ else(BUILD_PROJECTM_STATIC)
+ 				${IMAGE_LINK_TARGETS}
+ 				${CG_LINK_TARGETS}
+ 				${PRESET_FACTORY_LINK_TARGETS}
+-				${GLEW_LIBRARY}
++                                #${GLEW_LIBRARY}
+ 				${FTGL_LINK_TARGETS}
+ 				${MATH_LIBRARIES}
+ 				dl
+diff --git a/src/libprojectM/Renderer/CMakeLists.txt b/src/libprojectM/Renderer/CMakeLists.txt
+index 4e143d0..a55724a 100644
+--- a/src/libprojectM/Renderer/CMakeLists.txt
++++ b/src/libprojectM/Renderer/CMakeLists.txt
+@@ -44,7 +44,7 @@ INCLUDE_DIRECTORIES(${projectM_SOURCE_DIR})
+ 
+ ADD_LIBRARY(Renderer STATIC ${Renderer_SOURCES})
+ TARGET_LINK_LIBRARIES(Renderer ${MATH_LIBRARIES}
+-			${GLEW_LINK_TARGETS}
++  #${GLEW_LINK_TARGETS}
+ 			${FTGL_LINK_TARGETS}
+ 			${OPENGL_LIBRARIES}
+ 			${IMAGE_LINK_TARGETS}
+diff --git a/src/libprojectM/Renderer/FBO.cpp b/src/libprojectM/Renderer/FBO.cpp
+index fac2408..5c9139b 100755
+--- a/src/libprojectM/Renderer/FBO.cpp
++++ b/src/libprojectM/Renderer/FBO.cpp
+@@ -97,10 +97,10 @@ RenderTarget::RenderTarget(int texsize, int width, int height) : useFBO(false) {
+    this->texsize = texsize;
+ 
+ #ifdef USE_FBO
+-   glewInit();
++   //glewInit();
+       // Forceably disable FBO if user requested it but the video card / driver lacks
+       // the appropraite frame buffer extension.
+-      if (useFBO = glewIsSupported("GL_EXT_framebuffer_object"))
++      if (useFBO = 1)//glewIsSupported("GL_EXT_framebuffer_object"))
+ 	{	 
+ 
+ 	  GLuint   fb,  depth_rb, rgba_tex,  other_tex;
+diff --git a/src/libprojectM/Renderer/FBO.hpp b/src/libprojectM/Renderer/FBO.hpp
+index e79954d..3844f24 100755
+--- a/src/libprojectM/Renderer/FBO.hpp
++++ b/src/libprojectM/Renderer/FBO.hpp
+@@ -32,7 +32,10 @@
+ #ifdef USE_NATIVE_GLEW
+ #include "glew.h"
+ #else
+-#include <GL/glew.h>
++//#include <GL/glew.h>
++#define GL_GLEXT_PROTOTYPES
++#include <GL/gl.h>
++#include <GL/glext.h>
+ #endif
+ #endif
+ 
+-- 
+2.7.4
+
