@@ -3,7 +3,6 @@
 This is a [Kodi](http://kodi.tv) visualization addon.
 
 [![Build Status](https://travis-ci.org/notspiff/visualization.projectm.svg?branch=master)](https://travis-ci.org/notspiff/visualization.projectm)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/notspiff/visualization.projectm?svg=true)](https://ci.appveyor.com/project/notspiff/visualization-projectm)
 
 ## Build instructions
 
