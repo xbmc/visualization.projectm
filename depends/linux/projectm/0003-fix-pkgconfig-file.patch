@@ -1,0 +1,23 @@
+From ce60d26a8fcc51cc01f084e25c91416b6dd55248 Mon Sep 17 00:00:00 2001
+From: Arne Morten Kvarving <arne.morten.kvarving@sintef.no>
+Date: Sun, 1 Oct 2017 21:12:57 +0200
+Subject: [PATCH 3/6] fix pkgconfig file
+
+---
+ src/libprojectM/libprojectM.pc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/libprojectM/libprojectM.pc b/src/libprojectM/libprojectM.pc
+index 8d28b65..dbc5eb4 100644
+--- a/src/libprojectM/libprojectM.pc
++++ b/src/libprojectM/libprojectM.pc
+@@ -9,5 +9,5 @@ Name: libprojectM
+ Version: 2.1.0
+ Description: projectM - OpenGL Milkdrop
+ Requires:
+-Libs: -L${libdir} -lprojectM
++Libs: -L${libdir} -lprojectM -lMilkdropPresetFactory -lNativePresetFactory -lMstressJuppyDancer -lRenderer -lRovastarDarkSecret -lRovastarDriftingChaos -lRovastarFractalSpiral -lRovastarFractopicFrantic
+ Cflags: -I${includedir}
+-- 
+2.7.4
+

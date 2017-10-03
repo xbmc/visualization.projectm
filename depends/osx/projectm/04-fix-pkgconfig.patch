@@ -1,5 +1,5 @@
---- projectm/libprojectM.pc.in.orig	2015-03-16 14:02:55.733369674 +0100
-+++ projectm/libprojectM.pc.in	2015-03-16 14:03:42.685370237 +0100
+--- a/src/libprojectM/libprojectM.pc.in
++++ b/src/libprojectM/libprojectM.pc.in
 @@ -1,6 +1,6 @@
  prefix=@CMAKE_INSTALL_PREFIX@
  exec_prefix=@CMAKE_INSTALL_PREFIX@
@@ -9,9 +9,9 @@
  pkgdatadir=@CMAKE_INSTALL_PREFIX@/@RESOURCE_PREFIX@
  sysconfdir=@CMAKE_INSTALL_PREFIX@/@RESOURCE_PREFIX@
 @@ -9,5 +9,5 @@
- Version: 2.0.0
+ Version: @PROJECTM_VERSION@
  Description: projectM - OpenGL Milkdrop
  Requires:
--Libs: -L${libdir} -lprojectM 
+-Libs: -L${libdir} -lprojectM
 +Libs: -L${libdir} -lprojectM -lMilkdropPresetFactory -lNativePresetFactory -lRenderer -lm
- Cflags: -I${includedir} 
+ Cflags: -I${includedir}
