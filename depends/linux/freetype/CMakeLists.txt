@@ -9,6 +9,7 @@ externalproject_add(freetype
                     CONFIGURE_COMMAND <SOURCE_DIR>/configure 
                       --prefix=${OUTPUT_DIR}
                       --disable-shared
+                      --with-pic
                     INSTALL_COMMAND ""
                     BUILD_IN_SOURCE 1)
                   

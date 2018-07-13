@@ -20,9 +20,15 @@ set(INCLUDES ${OpenGL_INCLUDE_DIR}
              ${p8-platform_INCLUDE_DIRS}
              ${PROJECTM_INCLUDE_DIRS})
 
-set(DEPLIBS ${OPENGL_LIBRARIES}
-            ${PROJECTM_LIBS}
-            ${extra_libs})
+if(CORE_SYSTEM_NAME STREQUAL "linux")
+  set(DEPLIBS ${OPENGL_LIBRARIES}
+              -Wl,--whole-archive ${PROJECTM_LIBS} -Wl,--no-whole-archive
+              ${extra_libs})
+else()
+  set(DEPLIBS ${OPENGL_LIBRARIES}
+              ${PROJECTM_LIBS}
+              ${extra_libs})
+endif()
 
 set(PM_SOURCES src/Main.cpp)
 
