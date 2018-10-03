@@ -62,7 +62,7 @@ d4rk@xbmc.org
 
 #include <libprojectM/projectM.hpp>
 
-class CVisualizationProjectM
+class ATTRIBUTE_HIDDEN CVisualizationProjectM
   : public kodi::addon::CAddonBase,
     public kodi::addon::CInstanceVisualization
 {
@@ -117,8 +117,9 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.windowHeight = Height();
   m_configPM.aspectCorrection = true;
   m_configPM.easterEgg = 0.0;
-  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/Vera.ttf";
-  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/VeraMono.ttf";
+  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/fonts/Vera.ttf";
+  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/fonts/VeraMono.ttf";
+  m_configPM.datadir = kodi::GetAddonPath() + "/resources";
   m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
   m_lastLoggedPresetIdx = m_lastPresetIdx;
 
