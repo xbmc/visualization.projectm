@@ -69,9 +69,9 @@ msgid "User Preset Folder"
 msgstr "תיקית קביעוני משתמש"
 
 msgctxt "#30050"
-msgid "{0:d} sec"
-msgstr "{0:d} שניות"
+msgid "%2.0f secs"
+msgstr "%2.0f שניות"
 
 msgctxt "#30051"
-msgid "{0:d} %"
-msgstr "{0:d} %"
+msgid "%2.0f %%"
+msgstr "%2.0f %%"

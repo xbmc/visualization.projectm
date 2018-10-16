@@ -70,17 +70,13 @@ msgctxt "#30012"
 msgid "User Preset Folder"
 msgstr ""
 
-msgctxt "#30013"
-msgid "General"
-msgstr ""
-
 #empty strings from id 30013 to 30049
 #setting value formats
 
 msgctxt "#30050"
-msgid "{0:d} sec"
+msgid "%2.0f secs"
 msgstr ""
 
 msgctxt "#30051"
-msgid "{0:d} %"
+msgid "%2.0f %%"
 msgstr ""
