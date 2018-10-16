@@ -1,9 +1,0 @@
---- a/src/libprojectM/NativePresetFactory/CMakeLists.txt
-+++ b/src/libprojectM/NativePresetFactory/CMakeLists.txt
-@@ -16,3 +16,6 @@
- INCLUDE_DIRECTORIES(${projectM_SOURCE_DIR} ${Renderer_SOURCE_DIR})
- ADD_LIBRARY(NativePresetFactory STATIC ${NativePresetFactory_SOURCES})
- TARGET_LINK_LIBRARIES(NativePresetFactory Renderer ${MATH_LIBRARIES} ${DL_LIBRARIES})
-+IF(BUILD_PROJECTM_STATIC)
-+  INSTALL(TARGETS NativePresetFactory DESTINATION lib${LIB_SUFFIX})
-+endif()

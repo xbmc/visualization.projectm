@@ -34,6 +34,7 @@ set(PM_SOURCES src/Main.cpp)
 
 include_directories(${INCLUDES})
 
+set(PM_CUSTOM_DATA ${PROJECTM_DATA})
 build_addon(visualization.projectm PM DEPLIBS)
 
 include(CPack)

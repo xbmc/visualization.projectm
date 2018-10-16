@@ -1,9 +1,0 @@
---- a/src/libprojectM/Renderer/CMakeLists.txt
-+++ b/src/libprojectM/Renderer/CMakeLists.txt
-@@ -52,3 +52,6 @@
- 			${FREETYPE2_LIBRARIES}
- )
- set_target_properties(Renderer PROPERTIES COMPILE_FLAGS "-Wno-parentheses")
-+IF(BUILD_PROJECTM_STATIC)
-+  INSTALL(TARGETS Renderer DESTINATION lib${LIB_SUFFIX})
-+endif()

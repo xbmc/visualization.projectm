@@ -1,9 +1,0 @@
---- a/src/libprojectM/MilkdropPresetFactory/CMakeLists.txt
-+++ b/src/libprojectM/MilkdropPresetFactory/CMakeLists.txt
-@@ -24,3 +24,6 @@
- 
- ADD_LIBRARY(MilkdropPresetFactory STATIC ${MilkdropPresetFactory_SOURCES})
- TARGET_LINK_LIBRARIES(MilkdropPresetFactory Renderer)
-+IF(BUILD_PROJECTM_STATIC)
-+  INSTALL(TARGETS MilkdropPresetFactory DESTINATION lib${LIB_SUFFIX})
-+endif()
