@@ -143,9 +143,9 @@ CVisualizationProjectM::~CVisualizationProjectM()
 {
   unsigned int lastindex = 0;
   m_projectM->selectedPresetIndex(lastindex);
-  kodi::SetSettingInt("lastpresetidx", lastindex);
-  kodi::SetSettingString("lastpresetfolder", m_projectM->settings().presetURL);
-  kodi::SetSettingBoolean("lastlockedstatus", m_projectM->isPresetLocked());
+  kodi::SetSettingInt("last_preset_idx", lastindex);
+  kodi::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
+  kodi::SetSettingBoolean("last_locked_status", m_lastLockStatus);
 
   if (m_projectM)
   {
@@ -220,9 +220,7 @@ bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 {
   P8PLATFORM::CLockObject lock(m_pmMutex);
   m_projectM->setPresetLock(lockUnlock);
-  unsigned preset;
-  m_projectM->selectedPresetIndex(preset);
-  m_projectM->selectPreset(preset);
+  kodi::SetSettingBoolean("last_locked_status", lockUnlock);
   return true; 
 }
 
@@ -315,8 +313,8 @@ bool CVisualizationProjectM::InitProjectM()
     m_projectM = new projectM(m_configPM);
     if (m_configPM.presetURL == m_lastPresetDir)  //If it is not the first run AND if this is the same preset pack as last time
     {
-      m_projectM->setPresetLock(m_lastLockStatus);
       m_projectM->selectPreset(m_lastPresetIdx);
+      m_projectM->setPresetLock(m_lastLockStatus);
     }
     else
     {
