@@ -95,6 +95,7 @@ private:
   int m_lastPresetIdx;
   unsigned int m_lastLoggedPresetIdx;
   bool m_lastLockStatus;
+  bool m_shutdown = false;
 
   // some projectm globals
   const static int maxSamples=512;
@@ -144,6 +145,7 @@ CVisualizationProjectM::~CVisualizationProjectM()
 {
   unsigned int lastindex = 0;
   m_projectM->selectedPresetIndex(lastindex);
+  m_shutdown = true;
   kodi::SetSettingInt("lastpresetidx", lastindex);
   kodi::SetSettingString("lastpresetfolder", m_projectM->settings().presetURL);
   kodi::SetSettingBoolean("lastlockedstatus", m_projectM->isPresetLocked());
@@ -299,7 +301,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, 
   else if (settingName == "beat_sens")
     m_configPM.beatSensitivity = settingValue.GetInt() * 2;
 
-  if (settingName == "beat_sens") // becomes changed in future by a additional value on function
+  if (settingName == "beat_sens" && !m_shutdown) // becomes changed in future by a additional value on function
   {
     if (!InitProjectM())    //The last setting value is already set so we (re)initalize
       return ADDON_STATUS_UNKNOWN;
