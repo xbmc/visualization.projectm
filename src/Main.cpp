@@ -62,7 +62,7 @@ d4rk@xbmc.org
 
 #include <libprojectM/projectM.hpp>
 
-class CVisualizationProjectM
+class ATTRIBUTE_HIDDEN CVisualizationProjectM
   : public kodi::addon::CAddonBase,
     public kodi::addon::CInstanceVisualization
 {
@@ -95,6 +95,7 @@ private:
   int m_lastPresetIdx;
   unsigned int m_lastLoggedPresetIdx;
   bool m_lastLockStatus;
+  bool m_shutdown = false;
 
   // some projectm globals
   const static int maxSamples=512;
@@ -117,8 +118,9 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.windowHeight = Height();
   m_configPM.aspectCorrection = true;
   m_configPM.easterEgg = 0.0;
-  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/Vera.ttf";
-  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/VeraMono.ttf";
+  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/projectM/fonts/Vera.ttf";
+  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/projectM/fonts/VeraMono.ttf";
+  m_configPM.datadir = kodi::GetAddonPath() + "/resources/projectM";
   m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
   m_lastLoggedPresetIdx = m_lastPresetIdx;
 
@@ -143,9 +145,10 @@ CVisualizationProjectM::~CVisualizationProjectM()
 {
   unsigned int lastindex = 0;
   m_projectM->selectedPresetIndex(lastindex);
-  kodi::SetSettingInt("lastpresetidx", lastindex);
-  kodi::SetSettingString("lastpresetfolder", m_projectM->settings().presetURL);
-  kodi::SetSettingBoolean("lastlockedstatus", m_projectM->isPresetLocked());
+  m_shutdown = true;
+  kodi::SetSettingInt("last_preset_idx", lastindex);
+  kodi::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
+  kodi::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
 
   if (m_projectM)
   {
@@ -196,6 +199,8 @@ bool CVisualizationProjectM::PrevPreset()
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
   else
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+
+  return true;
 }
 
 bool CVisualizationProjectM::NextPreset()
@@ -298,7 +303,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, 
   else if (settingName == "beat_sens")
     m_configPM.beatSensitivity = settingValue.GetInt() * 2;
 
-  if (settingName == "beat_sens") // becomes changed in future by a additional value on function
+  if (settingName == "beat_sens" && !m_shutdown) // becomes changed in future by a additional value on function
   {
     if (!InitProjectM())    //The last setting value is already set so we (re)initalize
       return ADDON_STATUS_UNKNOWN;
@@ -338,7 +343,7 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
   m_UserPackFolder = false;
   if (pvalue == 0)
   {
-    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/presets";
+    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/projectM/presets";
   }
   else if (pvalue == 1) //User preset folder has been chosen
     m_UserPackFolder = true;
