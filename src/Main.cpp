@@ -118,9 +118,9 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.windowHeight = Height();
   m_configPM.aspectCorrection = true;
   m_configPM.easterEgg = 0.0;
-  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/fonts/Vera.ttf";
-  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/fonts/VeraMono.ttf";
-  m_configPM.datadir = kodi::GetAddonPath() + "/resources";
+  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/projectM/fonts/Vera.ttf";
+  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/projectM/fonts/VeraMono.ttf";
+  m_configPM.datadir = kodi::GetAddonPath() + "/resources/projectM";
   m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
   m_lastLoggedPresetIdx = m_lastPresetIdx;
 
@@ -146,9 +146,9 @@ CVisualizationProjectM::~CVisualizationProjectM()
   unsigned int lastindex = 0;
   m_projectM->selectedPresetIndex(lastindex);
   m_shutdown = true;
-  kodi::SetSettingInt("lastpresetidx", lastindex);
-  kodi::SetSettingString("lastpresetfolder", m_projectM->settings().presetURL);
-  kodi::SetSettingBoolean("lastlockedstatus", m_projectM->isPresetLocked());
+  kodi::SetSettingInt("last_preset_idx", lastindex);
+  kodi::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
+  kodi::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
 
   if (m_projectM)
   {
@@ -341,7 +341,7 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
   m_UserPackFolder = false;
   if (pvalue == 0)
   {
-    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/presets";
+    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/projectM/presets";
   }
   else if (pvalue == 1) //User preset folder has been chosen
     m_UserPackFolder = true;
