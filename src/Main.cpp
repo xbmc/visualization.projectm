@@ -199,6 +199,8 @@ bool CVisualizationProjectM::PrevPreset()
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
   else
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+
+  return true;
 }
 
 bool CVisualizationProjectM::NextPreset()
