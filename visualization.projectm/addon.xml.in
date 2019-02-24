@@ -3,7 +3,7 @@
   id="visualization.projectm"
   version="2.1.0"
   name="projectM"
-  provider-name="Team XBMC">
+  provider-name="Team Kodi">
   <requires>@ADDON_DEPENDS@</requires>
   <extension
     point="xbmc.player.musicviz"
