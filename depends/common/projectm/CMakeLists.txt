@@ -2,10 +2,14 @@ project(projectm)
 
 cmake_minimum_required(VERSION 2.8)
 
+if (APP_RENDER_SYSTEM STREQUAL "gles")
+  set(PROJECTM_CONFIG "--enable-gles")
+endif()
+
 include(ExternalProject)
 externalproject_add(projectm
                     SOURCE_DIR ${CMAKE_SOURCE_DIR}
-                    CONFIGURE_COMMAND cd <SOURCE_DIR> && autoreconf -vif && CXXFLAGS=-I${OUTPUT_DIR}/include CFLAGS=-I${OUTPUT_DIR}/include LDFLAGS=-L${OUTPUT_DIR}/lib ./configure --disable-shared --prefix=${OUTPUT_DIR} --with-pic
+                    CONFIGURE_COMMAND cd <SOURCE_DIR> && autoreconf -vif && CXXFLAGS=-I${OUTPUT_DIR}/include CFLAGS=-I${OUTPUT_DIR}/include LDFLAGS=-L${OUTPUT_DIR}/lib ./configure --disable-shared --disable-qt --prefix=${OUTPUT_DIR} --with-pic ${PROJECTM_CONFIG}
                     BUILD_COMMAND make
                     INSTALL_COMMAND ""
                     BUILD_IN_SOURCE 1)
