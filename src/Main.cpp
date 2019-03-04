@@ -56,10 +56,6 @@ d4rk@xbmc.org
 #include <kodi/addon-instance/Visualization.h>
 #include <threads/mutex.h>
 
-#if !defined(__APPLE__)
-#include <GL/gl.h>
-#endif
-
 #include <libprojectM/projectM.hpp>
 
 class ATTRIBUTE_HIDDEN CVisualizationProjectM
@@ -133,9 +129,7 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.presetDuration = kodi::GetSettingInt("preset_duration");
 
   ChoosePresetPack(kodi::GetSettingInt("preset_pack"));
-  std::string presetFolder = kodi::GetSettingString("user_preset_folder");
-  if (!presetFolder.empty())
-    ChooseUserPresetFolder(presetFolder);
+  ChooseUserPresetFolder(kodi::GetSettingString("user_preset_folder"));
   m_configPM.beatSensitivity = kodi::GetSettingInt("beat_sens") * 2;
 
   InitProjectM();
@@ -340,21 +334,20 @@ bool CVisualizationProjectM::InitProjectM()
 
 void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 {
-  m_UserPackFolder = false;
-  if (pvalue == 0)
-  {
-    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/projectM/presets";
-  }
-  else if (pvalue == 1) //User preset folder has been chosen
-    m_UserPackFolder = true;
+  m_UserPackFolder = pvalue == 1;
 }
 
 void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
 {
-  if (m_UserPackFolder)
+  if (m_UserPackFolder && !pvalue.empty())
   {
-    pvalue.erase(pvalue.length()-1,1);  //Remove "/" from the end
+    if (pvalue.back() == '/')
+      pvalue.erase(pvalue.length()-1,1);  //Remove "/" from the end
     m_configPM.presetURL = pvalue;
+  }
+  else
+  {
+    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/projectM/presets";
   }
 }
 
