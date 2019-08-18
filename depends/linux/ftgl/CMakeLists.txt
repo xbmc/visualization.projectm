@@ -1,7 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
 project(ftgl)
-
-cmake_minimum_required(VERSION 2.6)
-enable_language(CXX)
 
 include(ExternalProject)
 
