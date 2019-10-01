@@ -70,9 +70,9 @@ public:
   void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
   bool GetPresets(std::vector<std::string>& presets) override;
   bool LoadPreset(int select) override;
-  bool PrevPreset();
-  bool NextPreset();
-  bool LockPreset(bool lockUnlock);
+  bool PrevPreset() override;
+  bool NextPreset() override;
+  bool LockPreset(bool lockUnlock) override;
   int GetActivePreset() override;
   bool RandomPreset() override;
   bool IsLocked() override;
@@ -83,7 +83,7 @@ private:
   void ChoosePresetPack(int pvalue);
   void ChooseUserPresetFolder(std::string pvalue);
 
-  projectM *m_projectM;
+  projectM* m_projectM;
   projectM::Settings m_configPM;
   P8PLATFORM::CMutex m_pmMutex;
   bool m_UserPackFolder;
