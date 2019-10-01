@@ -64,19 +64,19 @@ class ATTRIBUTE_HIDDEN CVisualizationProjectM
 {
 public:
   CVisualizationProjectM();
-  virtual ~CVisualizationProjectM();
+  ~CVisualizationProjectM() override;
 
-  virtual void Render() override;
-  virtual void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
-  virtual bool GetPresets(std::vector<std::string>& presets) override;
-  virtual bool LoadPreset(int select) override;
-  virtual bool PrevPreset();
-  virtual bool NextPreset();
-  virtual bool LockPreset(bool lockUnlock);
-  virtual int GetActivePreset() override;
-  virtual bool RandomPreset() override;
-  virtual bool IsLocked() override;
-  virtual ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
+  void Render() override;
+  void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
+  bool GetPresets(std::vector<std::string>& presets) override;
+  bool LoadPreset(int select) override;
+  bool PrevPreset();
+  bool NextPreset();
+  bool LockPreset(bool lockUnlock);
+  int GetActivePreset() override;
+  bool RandomPreset() override;
+  bool IsLocked() override;
+  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
 
 private:
   bool InitProjectM();
