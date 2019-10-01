@@ -113,7 +113,7 @@ void CVisualizationProjectM::AudioData(const float* pAudioData, int iAudioDataLe
 {
   P8PLATFORM::CLockObject lock(m_pmMutex);
   if (m_projectM)
-    m_projectM->pcm()->addPCMfloat(pAudioData, iAudioDataLength);
+    m_projectM->pcm()->addPCMfloat_2ch(pAudioData, iAudioDataLength);
 }
 
 //-- Render -------------------------------------------------------------------
