@@ -69,9 +69,9 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.windowHeight = Height();
   m_configPM.aspectCorrection = true;
   m_configPM.easterEgg = 0.0;
-  m_configPM.titleFontURL = kodi::GetAddonPath() + "/resources/projectM/fonts/Vera.ttf";
-  m_configPM.menuFontURL = kodi::GetAddonPath() + "/resources/projectM/fonts/VeraMono.ttf";
-  m_configPM.datadir = kodi::GetAddonPath() + "/resources/projectM";
+  m_configPM.titleFontURL = kodi::GetAddonPath("resources/projectM/fonts/Vera.ttf");
+  m_configPM.menuFontURL = kodi::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
+  m_configPM.datadir = kodi::GetAddonPath("resources/projectM");
   m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
   m_lastLoggedPresetIdx = m_lastPresetIdx;
 
@@ -228,30 +228,31 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, 
   if (settingName.empty() || settingValue.empty())
     return ADDON_STATUS_UNKNOWN;
 
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  {
+    std::unique_lock<std::mutex> lock(m_pmMutex);
 
-  // It is now time to set the settings got from xmbc
-  if (settingName == "quality")
-    m_configPM.textureSize = settingValue.GetInt();
-  else if (settingName == "shuffle")
-    m_configPM.shuffleEnabled = settingValue.GetBoolean();
-  else if (settingName == "last_preset_idx")
-    m_lastPresetIdx = settingValue.GetInt();
-  else if (settingName == "last_locked_status")
-    m_lastLockStatus = settingValue.GetBoolean();
-  else if (settingName == "last_preset_folder")
-    m_lastPresetDir = settingValue.GetString();
-  else if (settingName == "smooth_duration")
-    m_configPM.smoothPresetDuration = (settingValue.GetInt() * 5 + 5);
-  else if (settingName == "preset_duration")
-    m_configPM.presetDuration = (settingValue.GetInt() * 5 + 5);
-  else if (settingName == "preset_pack")
-    ChoosePresetPack(settingValue.GetInt());
-  else if (settingName == "user_preset_folder")
-    ChooseUserPresetFolder(settingValue.GetString());
-  else if (settingName == "beat_sens")
-    m_configPM.beatSensitivity = settingValue.GetInt() * 2;
-
+    // It is now time to set the settings got from xmbc
+    if (settingName == "quality")
+      m_configPM.textureSize = settingValue.GetInt();
+    else if (settingName == "shuffle")
+      m_configPM.shuffleEnabled = settingValue.GetBoolean();
+    else if (settingName == "last_preset_idx")
+      m_lastPresetIdx = settingValue.GetInt();
+    else if (settingName == "last_locked_status")
+      m_lastLockStatus = settingValue.GetBoolean();
+    else if (settingName == "last_preset_folder")
+      m_lastPresetDir = settingValue.GetString();
+    else if (settingName == "smooth_duration")
+      m_configPM.smoothPresetDuration = (settingValue.GetInt() * 5 + 5);
+    else if (settingName == "preset_duration")
+      m_configPM.presetDuration = (settingValue.GetInt() * 5 + 5);
+    else if (settingName == "preset_pack")
+      ChoosePresetPack(settingValue.GetInt());
+    else if (settingName == "user_preset_folder")
+      ChooseUserPresetFolder(settingValue.GetString());
+    else if (settingName == "beat_sens")
+      m_configPM.beatSensitivity = settingValue.GetInt() * 2;
+  }
   if (settingName == "beat_sens" && !m_shutdown) // becomes changed in future by a additional value on function
   {
     if (!InitProjectM())    //The last setting value is already set so we (re)initalize
@@ -302,7 +303,7 @@ void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
   }
   else
   {
-    m_configPM.presetURL = kodi::GetAddonPath() + "/resources/projectM/presets";
+    m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets");
   }
 }
 
