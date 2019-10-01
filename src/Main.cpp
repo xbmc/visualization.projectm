@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2007-2014 Team XBMC
+ *      Copyright (C) 2007-2019 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -53,52 +53,7 @@ d4rk@xbmc.org
 
 */
 
-#include <kodi/addon-instance/Visualization.h>
-#include <threads/mutex.h>
-
-#include <libprojectM/projectM.hpp>
-
-class ATTRIBUTE_HIDDEN CVisualizationProjectM
-  : public kodi::addon::CAddonBase,
-    public kodi::addon::CInstanceVisualization
-{
-public:
-  CVisualizationProjectM();
-  ~CVisualizationProjectM() override;
-
-  void Render() override;
-  void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
-  bool GetPresets(std::vector<std::string>& presets) override;
-  bool LoadPreset(int select) override;
-  bool PrevPreset() override;
-  bool NextPreset() override;
-  bool LockPreset(bool lockUnlock) override;
-  int GetActivePreset() override;
-  bool RandomPreset() override;
-  bool IsLocked() override;
-  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
-
-private:
-  bool InitProjectM();
-  void ChoosePresetPack(int pvalue);
-  void ChooseUserPresetFolder(std::string pvalue);
-
-  projectM* m_projectM;
-  projectM::Settings m_configPM;
-  P8PLATFORM::CMutex m_pmMutex;
-  bool m_UserPackFolder;
-  std::string m_lastPresetDir;
-  int m_lastPresetIdx;
-  unsigned int m_lastLoggedPresetIdx;
-  bool m_lastLockStatus;
-  bool m_shutdown = false;
-
-  // some projectm globals
-  const static int maxSamples=512;
-  const static int texsize=512;
-  const static int gx=40,gy=30;
-  const static int fps=100;
-};
+#include "Main.h"
 
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by XBMC. Do any setup here.

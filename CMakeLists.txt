@@ -39,6 +39,8 @@ endif()
 
 set(PM_SOURCES src/Main.cpp)
 
+set(PM_HEADERS src/Main.h)
+
 include_directories(${INCLUDES})
 
 set(PM_CUSTOM_DATA ${PROJECTM_DATA})
