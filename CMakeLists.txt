@@ -8,33 +8,33 @@ endif()
 
 find_package(Kodi REQUIRED)
 find_package(p8-platform REQUIRED)
-
 find_package(ProjectM REQUIRED)
 
 add_definitions(-DHAS_SDL_OPENGL)
 
-set(INCLUDES ${KODI_INCLUDE_DIR}
-             ${p8-platform_INCLUDE_DIRS}
-             ${PROJECTM_INCLUDE_DIRS})
-
-if(CORE_SYSTEM_NAME STREQUAL "linux")
-  set(DEPLIBS -Wl,--whole-archive ${PROJECTM_LIBS} -Wl,--no-whole-archive
-              ${extra_libs})
+if(APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM)
+  find_package(OpenGl REQUIRED)
+  set(DEPLIBS ${OPENGL_LIBRARIES})
+  set(includes ${OPENGL_INCLUDE_DIR})
+  add_definitions(${OPENGL_DEFINITIONS})
 else()
-  set(DEPLIBS ${PROJECTM_LIBS}
-              ${extra_libs})
+  find_package(OpenGLES REQUIRED)
+  set(DEPLIBS ${OPENGLES_LIBRARIES})
+  set(includes ${OPENGLES_INCLUDE_DIR})
+  add_definitions(${OPENGLES_DEFINITIONS})
 endif()
 
-if(APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM)
-  find_package(OpenGL REQUIRED)
-  set(DEPLIBS ${DEPLIBS} ${OPENGL_LIBRARIES})
-  set(APP_RENDER_SYSTEM gl)
-elseif(APP_RENDER_SYSTEM STREQUAL "gles")
-  find_package(OpenGLES REQUIRED)
-  set(DEPLIBS ${DEPLIBS} ${OPENGLES_LIBRARIES})
-  set(APP_RENDER_SYSTEM gles)
+include_directories(${includes}
+                    ${p8-platform_INCLUDE_DIRS}
+                    ${PROJECTM_INCLUDE_DIRS}
+                    ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
+
+if(CORE_SYSTEM_NAME STREQUAL "linux")
+  list(APPEND DEPLIBS -Wl,--whole-archive ${PROJECTM_LIBS} -Wl,--no-whole-archive
+                      ${extra_libs})
 else()
-  message(FATAL_ERROR "APP_RENDER_SYSTEM ${APP_RENDER_SYSTEM} isn't supported.")
+  list(APPEND DEPLIBS ${PROJECTM_LIBS}
+                      ${extra_libs})
 endif()
 
 set(PM_SOURCES src/Main.cpp)
