@@ -56,7 +56,7 @@ d4rk@xbmc.org
 #pragma once
 
 #include <kodi/addon-instance/Visualization.h>
-#include <threads/mutex.h>
+#include <mutex>
 
 #include <libprojectM/projectM.hpp>
 
@@ -87,7 +87,7 @@ private:
 
   projectM* m_projectM;
   projectM::Settings m_configPM;
-  P8PLATFORM::CMutex m_pmMutex;
+  std::mutex m_pmMutex;
   bool m_UserPackFolder;
   std::string m_lastPresetDir;
   int m_lastPresetIdx;

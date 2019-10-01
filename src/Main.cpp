@@ -111,7 +111,7 @@ CVisualizationProjectM::~CVisualizationProjectM()
 //-----------------------------------------------------------------------------
 void CVisualizationProjectM::AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   if (m_projectM)
     m_projectM->pcm()->addPCMfloat_2ch(pAudioData, iAudioDataLength);
 }
@@ -121,7 +121,7 @@ void CVisualizationProjectM::AudioData(const float* pAudioData, int iAudioDataLe
 //-----------------------------------------------------------------------------
 void CVisualizationProjectM::Render()
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   if (m_projectM)
   {
     m_projectM->renderFrame();
@@ -135,14 +135,14 @@ void CVisualizationProjectM::Render()
 
 bool CVisualizationProjectM::LoadPreset(int select)
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   m_projectM->selectPreset(select);
   return true;
 }
 
 bool CVisualizationProjectM::PrevPreset()
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
 //  switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
   if (!m_projectM->isShuffleEnabled())
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
@@ -154,7 +154,7 @@ bool CVisualizationProjectM::PrevPreset()
 
 bool CVisualizationProjectM::NextPreset()
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
 //  switchPreset(ALPHA_NEXT, SOFT_CUT);
   if (!m_projectM->isShuffleEnabled())
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
@@ -165,14 +165,14 @@ bool CVisualizationProjectM::NextPreset()
 
 bool CVisualizationProjectM::RandomPreset()
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   m_projectM->setShuffleEnabled(m_configPM.shuffleEnabled);
   return true; 
 }
 
 bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   m_projectM->setPresetLock(lockUnlock);
   unsigned preset;
   m_projectM->selectedPresetIndex(preset);
@@ -185,7 +185,7 @@ bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 //-----------------------------------------------------------------------------
 bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   int numPresets = m_projectM ? m_projectM->getPlaylistSize() : 0;
   if (numPresets > 0)
   {
@@ -201,7 +201,7 @@ bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 int CVisualizationProjectM::GetActivePreset()
 {
   unsigned preset;
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   if(m_projectM && m_projectM->selectedPresetIndex(preset))
     return preset;
 
@@ -213,7 +213,7 @@ int CVisualizationProjectM::GetActivePreset()
 //-----------------------------------------------------------------------------
 bool CVisualizationProjectM::IsLocked()
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   if(m_projectM)
     return m_projectM->isPresetLocked();
   else
@@ -228,7 +228,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, 
   if (settingName.empty() || settingValue.empty())
     return ADDON_STATUS_UNKNOWN;
 
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
 
   // It is now time to set the settings got from xmbc
   if (settingName == "quality")
@@ -262,7 +262,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, 
 
 bool CVisualizationProjectM::InitProjectM()
 {
-  P8PLATFORM::CLockObject lock(m_pmMutex);
+  std::unique_lock<std::mutex> lock(m_pmMutex);
   delete m_projectM; //We are re-initializing the engine
   try
   {
