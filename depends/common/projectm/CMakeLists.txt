@@ -8,8 +8,13 @@ endif()
 include(ExternalProject)
 externalproject_add(projectm
                     SOURCE_DIR ${CMAKE_SOURCE_DIR}
-                    CONFIGURE_COMMAND cd <SOURCE_DIR> && autoreconf -vif && CXXFLAGS=-I${OUTPUT_DIR}/include CFLAGS=-I${OUTPUT_DIR}/include LDFLAGS=-L${OUTPUT_DIR}/lib ./configure --disable-shared --disable-qt --prefix=${OUTPUT_DIR} --with-pic ${PROJECTM_CONFIG}
-                    BUILD_COMMAND make
+                    UPDATE_COMMAND autoreconf -vif
+                    CONFIGURE_COMMAND CXXFLAGS=-I${OUTPUT_DIR}/include CFLAGS=-I${OUTPUT_DIR}/include LDFLAGS=-L${OUTPUT_DIR}/lib ./configure
+                      --disable-shared
+                      --disable-qt
+                      --disable-threading
+                      --prefix=${OUTPUT_DIR}
+                      --with-pic ${PROJECTM_CONFIG}
                     INSTALL_COMMAND ""
                     BUILD_IN_SOURCE 1)
 
