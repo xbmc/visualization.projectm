@@ -290,7 +290,65 @@ bool CVisualizationProjectM::InitProjectM()
 
 void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 {
-  m_UserPackFolder = pvalue == 1;
+  switch (pvalue)
+  {
+    case -1:
+      m_UserPackFolder = true;
+      break;
+
+    case 0:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_bltc201");
+      break;
+
+    case 1:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_milkdrop");
+      break;
+
+    case 2:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_milkdrop_104");
+      break;
+
+    case 3:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_milkdrop_200");
+      break;
+
+    case 4:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_mischa_collection");
+      break;
+
+    case 5:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_projectM");
+
+    case 6:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_stock");
+      break;
+
+    case 7:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_tryptonaut");
+      break;
+
+    case 8:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_yin");
+      break;
+
+    case 9:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/tests");
+      break;
+
+    default:
+      kodi::Log(ADDON_LOG_FATAL, "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)", __func__, pvalue);
+      break;
+  }
 }
 
 void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
@@ -300,10 +358,6 @@ void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
     if (pvalue.back() == '/')
       pvalue.erase(pvalue.length()-1,1);  //Remove "/" from the end
     m_configPM.presetURL = pvalue;
-  }
-  else
-  {
-    m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets");
   }
 }
 

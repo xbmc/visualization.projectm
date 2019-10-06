@@ -1,0 +1,75 @@
+From f8365f45e7d4debbf6bdf9f7edc220c5009cdd63 Mon Sep 17 00:00:00 2001
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sun, 6 Oct 2019 09:58:31 +0200
+Subject: [PATCH] allow separate folder structure of presets during install
+
+This is intended to install the folders as deposited at the source. If the backend is used then the desired folder will be selected.
+
+This allows a better overlay of the available presets and avoids overwriting the same filenames in different folders during installation.
+
+New configure value "--enable-preset-subdirs"
+---
+ Makefile.am  |  4 ++++
+ configure.ac | 10 ++++++++++
+ 2 files changed, 14 insertions(+)
+
+diff --git a/Makefile.am b/Makefile.am
+index 6bb55d9a..a9789f3d 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -19,8 +19,12 @@ pm_font__DATA = fonts/Vera.ttf fonts/VeraMono.ttf
+ 
+ # find and install all preset files
+ install-data-local:
++if ENABLE_PRESET_SUBDIRS
++	find "$(PRESETSDIR)" -type f -exec install -Dm 755 "{}" "$(DESTDIR)/$(pm_data_dir)/{}" \;
++else
+ 	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pm_presets_dir)
+ 	find "$(PRESETSDIR)" -type f -print0 | LC_ALL=C sort -z | xargs -0 '-I{}' $(INSTALL_DATA) '{}' $(DESTDIR)$(pm_presets_dir)
++endif
+ 
+ # from https://stackoverflow.com/questions/30897170/ac-subst-does-not-expand-variable answer: https://stackoverflow.com/a/30960268
+ # ptomato https://stackoverflow.com/users/172999/ptomato
+diff --git a/configure.ac b/configure.ac
+index ca4faa40..fb38f9a7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -32,6 +32,7 @@ AS_IF([test "x$enable_emscripten" = "xyes" || test "x$EMSCRIPTEN" = "xyes"], [
+   enable_threading=no
+   enable_gles=yes
+   enable_sdl=yes
++  enable_preset_subdirs=no
+ ], [
+   dnl Running in a normal OS (not emscripten)
+   AX_CHECK_GL
+@@ -129,6 +130,13 @@ AC_ARG_ENABLE([gles],
+     AC_DEFINE([USE_GLES], [1], [Define USE_GLES])
+ ])
+ 
++AC_ARG_ENABLE([preset_subdirs],
++  AS_HELP_STRING([--enable-preset-subdirs], [Organize presets into subdirectories.]),
++  [], [enable_preset_subdirs=no])
++  AS_IF([test "x$enable_preset_subdirs" = "xyes"], [
++    AC_DEFINE([ENABLE_PRESET_SUBDIRS], [1], [Define ENABLE_PRESET_SUBDIRS])
++])
++
+ dnl LLVM
+ dnl unfortuately AX_LLVM macro seems to be out of date, so we're going to rely on the user to make sure LLVM is installed correctly
+ AC_ARG_ENABLE([llvm],
+@@ -214,6 +222,7 @@ AM_CONDITIONAL([ENABLE_QT], [test "x$enable_qt" = "xyes"])
+ AM_CONDITIONAL([ENABLE_JACK], [test "x$enable_jack" = "xyes"])
+ AM_CONDITIONAL([ENABLE_PULSEAUDIO], [test "x$enable_pulseaudio" = "xyes"])
+ AM_CONDITIONAL([ENABLE_EMSCRIPTEN], [test "x$enable_emscripten" = "xyes"])
++AM_CONDITIONAL([ENABLE_PRESET_SUBDIRS], [test "x$enable_preset_subdirs" = "xyes"])
+ 
+ 
+ my_CFLAGS="-Wall -Wchar-subscripts -Wformat-security -Wpointer-arith -Wshadow -Wsign-compare -Wtype-limits "
+@@ -255,4 +264,5 @@ Jack:                   ${enable_jack}
+ OpenGLES:               ${enable_gles}
+ Emscripten:             ${enable_emscripten}
+ llvm:                   ${enable_llvm}
++Preset subdirs:         ${enable_preset_subdirs}
+ ])
+-- 
+2.20.1
+

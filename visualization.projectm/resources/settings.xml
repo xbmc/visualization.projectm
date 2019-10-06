@@ -3,14 +3,23 @@
     <category id="main" label="30013" help="0">
       <group id="1" label="0">
         <setting id="preset_pack" type="integer" label="30009" help="0">
-          <default>0</default>
+          <default>5</default>
           <constraints>
             <options>
-              <option label="30010">0</option>
-              <option label="30011">1</option>
+              <option label="30020">0</option> <!-- bltc201 -->
+              <option label="30021">1</option> <!-- Milkdrop -->
+              <option label="30022">2</option> <!-- Milkdrop 1.04 -->
+              <option label="30023">3</option> <!-- Milkdrop 2.00 -->
+              <option label="30024">4</option> <!-- Mischa's Collection -->
+              <option label="30025">5</option> <!-- projectM -->
+              <option label="30026">6</option> <!-- Stock -->
+              <option label="30027">7</option> <!-- Tryptonaut -->
+              <option label="30028">8</option> <!-- Yin -->
+              <option label="30029">9</option> <!-- Tests -->
+              <option label="30011">-1</option> <!-- User Defined Preset Folder -->
             </options>
           </constraints>
-          <control type="spinner" format="string" />
+          <control type="list" format="string" />
         </setting>
         <setting id="user_preset_folder" type="path" label="30012" help="0">
           <default></default>
@@ -18,7 +27,7 @@
             <allowempty>true</allowempty>
           </constraints>
           <dependencies>
-            <dependency type="visible" setting="preset_pack" operator="is">1</dependency>
+            <dependency type="visible" setting="preset_pack" operator="is">-1</dependency>
           </dependencies>
           <control type="button" format="path"/>
         </setting>
