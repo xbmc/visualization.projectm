@@ -13,6 +13,7 @@ externalproject_add(projectm
                       --disable-shared
                       --disable-qt
                       --disable-threading
+                      --enable-preset-subdirs
                       --prefix=${OUTPUT_DIR}
                       --with-pic ${PROJECTM_CONFIG}
                     INSTALL_COMMAND ""

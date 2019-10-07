@@ -74,7 +74,49 @@ msgctxt "#30013"
 msgid "General"
 msgstr ""
 
-#empty strings from id 30013 to 30049
+#empty strings from id 30013 to 30019
+
+msgctxt "#30020"
+msgid "bltc201"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Milkdrop"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Milkdrop 1.04"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Milkdrop 2.00"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Mischa's Collection"
+msgstr ""
+
+msgctxt "#30025"
+msgid "projectM"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Stock"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Tryptonaut"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Yin"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Tests"
+msgstr ""
+
+#empty strings from id 30030 to 30049
 #setting value formats
 
 msgctxt "#30050"
