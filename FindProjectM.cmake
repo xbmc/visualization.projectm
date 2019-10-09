@@ -1,41 +1,42 @@
-# - Try to find ASS
+# - Try to find ProjectM
 # Once done this will define
 #
-# ASS_FOUND - system has libass
-# ASS_INCLUDE_DIRS - the libass include directory
-# ASS_LIBRARIES - The libass libraries
+# PROJECTM_FOUND - system has libprojectM
+# PROJECTM_INCLUDE_DIRS - the libprojectM include directory
+# PROJECTM_PKGDATADIR - the libprojectM directory with required data, e.g. presets
+# PROJECTM_LIBRARIES - The libprojectM libraries
 
 find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
-  pkg_check_modules (PROJECTM libprojectM)
-  list(APPEND PROJECTM_INCLUDE_DIRS ${PROJECTM_INCLUDEDIR})
+  pkg_check_modules(PC_PROJECTM libprojectM QUIET)
+
+  if(EXISTS ${PC_PROJECTM_PREFIX}/share/projectM)
+    set(PC_PROJECTM_PKGDATADIR ${PC_PROJECTM_PREFIX}/share/projectM)
+  else()
+    execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=pkgdatadir libprojectM --prefix-variable=${PC_PROJECTM_PREFIX}
+                    OUTPUT_VARIABLE PC_PROJECTM_PKGDATADIR
+                    RESULT_VARIABLE _pkgconfig_failed)
+    if (_pkgconfig_failed)
+      message(FATAL_ERROR "Missing libprojectM pkgdatadir")
+    endif()
+
+    string(REGEX REPLACE "[\r\n]" "" PC_PROJECTM_PKGDATADIR "${PC_PROJECTM_PKGDATADIR}")
+  endif()
 endif()
 
-#if(NOT PROJECTM_FOUND)
-#  find_path(PROJECTM_INCLUDE_DIRS libprojectM/projectM.hpp)
-#  find_library(PROJECTM_LIBRARIES projectM)
-#endif()
+find_path(PROJECTM_INCLUDE_DIRS libprojectM/projectM.hpp
+                                PATHS ${PC_PROJECTM_INCLUDEDIR})
+find_path(PROJECTM_PKGDATADIR NAMES config.inp presets/presets_projectM
+                              PATH_SUFFIXES projectM
+                              PATHS ${PC_PROJECTM_PKGDATADIR})
+find_library(PROJECTM_LIBRARIES NAMES projectM
+                                PATHS ${PC_PROJECTM_LIBDIR})
+
+if(APPLE)
+  set(PROJECTM_LIBRARIES "-framework CoreFoundation" ${PROJECTM_LIBRARIES})
+endif()
 
 include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(projectM REQUIRED_VARS PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES PROJECTM_PKGDATADIR)
 
-  # this var is not set when using system libs on linux
-if(PROJECTM_LIBRARY_DIRS)
-  find_package_handle_standard_args(ProjectM DEFAULT_MSG PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES PROJECTM_LIBRARY_DIRS)
-
-  if(APPLE)
-    set(EXTRA_LDFLAGS "-framework CoreFoundation")
-  else()
-    set(EXTRA_LDFLAGS -Wl,-rpath='$ORIGIN')
-  endif()
-
-  set(PROJECTM_LIBS ${EXTRA_LDFLAGS} -L${PROJECTM_LIBRARY_DIRS} ${PROJECTM_LIBRARIES})
-
-  file(GLOB PROJECTM_SOLIB  ${PROJECTM_LIBRARY_DIRS}/lib${PROJECTM_LIBRARIES}.so*)
-  set(COPY_SOLIB true)
-else()
-  find_package_handle_standard_args(ProjectM DEFAULT_MSG PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES)
-  set(PROJECTM_LIBS ${PROJECTM_LIBRARIES})
-endif()
-set(PROJECTM_DATA ${PROJECTM_PREFIX}/share/projectM)
-
-mark_as_advanced(PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES PROJECTM_DATA)
+mark_as_advanced(PROJECTM_INCLUDE_DIRS PROJECTM_LIBRARIES PROJECTM_PKGDATADIR)
