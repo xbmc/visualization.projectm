@@ -87,7 +87,9 @@ CVisualizationProjectM::CVisualizationProjectM()
   ChooseUserPresetFolder(kodi::GetSettingString("user_preset_folder"));
   m_configPM.beatSensitivity = kodi::GetSettingInt("beat_sens") * 2;
 
+#ifndef _WIN32
   InitProjectM();
+#endif
 }
 
 CVisualizationProjectM::~CVisualizationProjectM()
@@ -104,6 +106,22 @@ CVisualizationProjectM::~CVisualizationProjectM()
     delete m_projectM;
     m_projectM = nullptr;
   }
+}
+
+bool CVisualizationProjectM::Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName)
+{
+#ifdef _WIN32
+  InitProjectM();
+
+  if (!m_presetsSet)
+  {
+    std::vector<std::string> presets;
+    GetPresets(presets);
+    CInstanceVisualization::TransferPresets(presets);
+    m_presetsSet = true;
+  }
+#endif
+  return true;
 }
 
 //-- Audiodata ----------------------------------------------------------------
