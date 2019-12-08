@@ -3,9 +3,10 @@ Priority: extra
 Maintainer: Team Kodi <contact@kodi.tv>
 Uploaders: Arne Morten Kvarving <spiff@xbmc.org>,
            Wolfgang Schupp <wsnipex@kodi.tv>
-Build-Depends: debhelper (>= 8.0.0), cmake, kodi-addon-dev, libprojectm-dev,
-               libgl1-mesa-dev, pkg-config
-Standards-Version: 3.9.5
+Build-Depends: debhelper (>= 9.0.0), cmake, kodi-addon-dev, libprojectm-dev,
+               libgles2-mesa-dev [arm64 armhf], libgl1-mesa-dev [i386 amd64],
+               pkg-config
+Standards-Version: 4.1.2
 Section: libs
 Homepage: http://kodi.tv
 
