@@ -12,7 +12,6 @@ externalproject_add(projectm
                     CONFIGURE_COMMAND CXXFLAGS=-I${OUTPUT_DIR}/include CFLAGS=-I${OUTPUT_DIR}/include LDFLAGS=-L${OUTPUT_DIR}/lib ./configure
                       --disable-shared
                       --disable-qt
-                      --disable-threading
                       --enable-preset-subdirs
                       --prefix=${OUTPUT_DIR}
                       --with-pic ${PROJECTM_CONFIG}
