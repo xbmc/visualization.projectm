@@ -1,0 +1,70 @@
+From ae10f96e828797b7e30dbead26d4728b37779047 Mon Sep 17 00:00:00 2001
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sat, 5 Oct 2019 02:10:46 +0200
+Subject: [PATCH] change SOIL2 to use on angle
+
+---
+ src/libprojectM/Renderer/SOIL2/SOIL2.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/src/libprojectM/Renderer/SOIL2/SOIL2.c b/src/libprojectM/Renderer/SOIL2/SOIL2.c
+index 64dbf27..00382a9 100755
+--- a/src/libprojectM/Renderer/SOIL2/SOIL2.c
++++ b/src/libprojectM/Renderer/SOIL2/SOIL2.c
+@@ -33,7 +33,7 @@
+ 	#define SOIL_X11_PLATFORM
+ #endif
+ 
+-#if ( defined( SOIL_PLATFORM_IOS ) || defined( SOIL_PLATFORM_ANDROID ) ) && ( !defined( SOIL_GLES1 ) && !defined( SOIL_GLES2 ) )
++#if ( defined(HAS_ANGLE) || defined( SOIL_PLATFORM_IOS ) || defined( SOIL_PLATFORM_ANDROID ) ) && ( !defined( SOIL_GLES1 ) && !defined( SOIL_GLES2 ) )
+ 	#define SOIL_GLES2
+ #endif
+ 
+@@ -41,7 +41,12 @@
+ 	#include <EGL/egl.h>
+ #endif
+ 
+-#if defined( SOIL_GLES2 )
++#if defined(HAS_ANGLE)
++	#include <angle_gl.h>
++	#ifndef APIENTRY
++		#define APIENTRY GL_APIENTRY
++	#endif
++#elif defined( SOIL_GLES2 )
+ 	#ifdef SOIL_PLATFORM_IOS
+ 		#include <OpenGLES/ES2/gl.h>
+ 		#include <OpenGLES/ES2/glext.h>
+@@ -2793,12 +2798,22 @@ int query_cubemap_capability( void )
+ 	if( has_cubemap_capability == SOIL_CAPABILITY_UNKNOWN )
+ 	{
+ 		/*	we haven't yet checked for the capability, do so	*/
++#if defined( SOIL_PLATFORM_IOS )
++		/*	iOS give for cubemap nothing and seems to be not supported, but by test it was usable! */
++		has_cubemap_capability = SOIL_CAPABILITY_PRESENT;
++#else
+ 		if(
+ 			(0 == SOIL_GL_ExtensionSupported(
+ 				"GL_ARB_texture_cube_map" ) )
++		&&
++			(0 == SOIL_GL_ExtensionSupported(
++				"GL_ARB_texture_cube_map_array" ) )
+ 		&&
+ 			(0 == SOIL_GL_ExtensionSupported(
+ 				"GL_EXT_texture_cube_map" ) )
++		&&
++			(0 == SOIL_GL_ExtensionSupported(
++				"GL_EXT_texture_cube_map_array" ) )
+ 			)
+ 		{
+ 			/*	not there, flag the failure	*/
+@@ -2808,6 +2823,7 @@ int query_cubemap_capability( void )
+ 			/*	it's there!	*/
+ 			has_cubemap_capability = SOIL_CAPABILITY_PRESENT;
+ 		}
++#endif
+ 	}
+ 	/*	let the user know if we can do cubemaps or not	*/
+ 	return has_cubemap_capability;
+-- 
+2.21.0
+
