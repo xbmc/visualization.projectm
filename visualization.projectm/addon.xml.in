@@ -1,19 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <addon
   id="visualization.projectm"
-  version="2.3.3"
+  version="2.3.4"
   name="projectM"
   provider-name="Team Kodi">
   <requires>@ADDON_DEPENDS@</requires>
   <extension
     point="xbmc.player.musicviz"
-    library_@PLATFORM@="@LIBRARY_FILENAME@">
-    <settings>
-      <userdirs>
-        <userdir path="special://profile/addon_data/visualization.projectm"/>
-      </userdirs>
-    </settings>
-  </extension>
+    library_@PLATFORM@="@LIBRARY_FILENAME@"/>
   <extension point="xbmc.addon.metadata">
     <summary lang="af_ZA">projectM vat jou op 'n vlug deur die klankgolwe wat jy hoor</summary>
     <summary lang="ar_SA">مشروع M يجعلك تطير بين موحات الصوت التي تسمعها</summary>

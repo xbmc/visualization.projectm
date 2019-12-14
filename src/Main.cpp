@@ -56,7 +56,7 @@ d4rk@xbmc.org
 #include "Main.h"
 
 //-- Create -------------------------------------------------------------------
-// Called once when the visualisation is created by XBMC. Do any setup here.
+// Called once when the visualisation is created by Kodi. Do any setup here.
 //-----------------------------------------------------------------------------
 CVisualizationProjectM::CVisualizationProjectM()
   : m_projectM(nullptr),
@@ -107,7 +107,7 @@ CVisualizationProjectM::~CVisualizationProjectM()
 }
 
 //-- Audiodata ----------------------------------------------------------------
-// Called by XBMC to pass new audio data to the vis
+// Called by Kodi to pass new audio data to the vis
 //-----------------------------------------------------------------------------
 void CVisualizationProjectM::AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
 {
@@ -181,7 +181,7 @@ bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 }
 
 //-- GetPresets ---------------------------------------------------------------
-// Return a list of presets to XBMC for display
+// Return a list of presets to Kodi for display
 //-----------------------------------------------------------------------------
 bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 {
@@ -221,7 +221,7 @@ bool CVisualizationProjectM::IsLocked()
 }
 
 //-- UpdateSetting ------------------------------------------------------------
-// Handle setting change request from XBMC
+// Handle setting change request from Kodi
 //-----------------------------------------------------------------------------
 ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue)
 {

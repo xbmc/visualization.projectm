@@ -1,0 +1,26 @@
+From 67ca44201eac41c88c8a7e7ac41cf7599d7ad7ac Mon Sep 17 00:00:00 2001
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sat, 14 Dec 2019 08:46:29 +0100
+Subject: [PATCH] fix-mac-install
+
+---
+ Makefile.am | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index a9789f3..8967302 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -20,7 +20,8 @@ pm_font__DATA = fonts/Vera.ttf fonts/VeraMono.ttf
+ # find and install all preset files
+ install-data-local:
+ if ENABLE_PRESET_SUBDIRS
+-	find "$(PRESETSDIR)" -type f -exec install -Dm 755 "{}" "$(DESTDIR)/$(pm_data_dir)/{}" \;
++	find "$(PRESETSDIR)" -type d -exec $(MKDIR_P) "$(DESTDIR)/$(pm_data_dir)/{}" \;
++	find "$(PRESETSDIR)" -type f -exec $(INSTALL_DATA) "{}" "$(DESTDIR)/$(pm_data_dir)/{}" \;
+ else
+ 	test -z $(DESTDIR)$(pkgdatadir) || $(MKDIR_P) $(DESTDIR)$(pm_presets_dir)
+ 	find "$(PRESETSDIR)" -type f -print0 | LC_ALL=C sort -z | xargs -0 '-I{}' $(INSTALL_DATA) '{}' $(DESTDIR)$(pm_presets_dir)
+-- 
+2.20.1
+
