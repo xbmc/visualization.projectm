@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2007-2019 Team Kodi
+ *      Copyright (C) 2007-2020 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -92,7 +92,9 @@ private:
   bool m_UserPackFolder;
   std::string m_lastPresetDir;
   int m_lastPresetIdx;
+#ifdef DEBUG
   unsigned int m_lastLoggedPresetIdx;
+#endif
   bool m_lastLockStatus;
   bool m_shutdown = false;
 
