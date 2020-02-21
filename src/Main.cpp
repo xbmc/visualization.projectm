@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2007-2019 Team Kodi
+ *      Copyright (C) 2007-2020 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -73,7 +73,9 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.menuFontURL = kodi::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
   m_configPM.datadir = kodi::GetAddonPath("resources/projectM");
   m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
+#ifdef DEBUG
   m_lastLoggedPresetIdx = m_lastPresetIdx;
+#endif
 
   m_configPM.textureSize = kodi::GetSettingInt("quality");
   m_configPM.shuffleEnabled = kodi::GetSettingBoolean("shuffle");
@@ -125,11 +127,13 @@ void CVisualizationProjectM::Render()
   if (m_projectM)
   {
     m_projectM->renderFrame();
+#ifdef DEBUG
       unsigned preset;
       m_projectM->selectedPresetIndex(preset);
-//      if (m_lastLoggedPresetIdx != preset)
-//        CLog::Log(LOGDEBUG,"PROJECTM - Changed preset to: %s",g_presets[preset]);
+      if (m_lastLoggedPresetIdx != preset)
+        CLog::Log(ADDON_LOG_DEBUG,"PROJECTM - Changed preset to: %s",g_presets[preset]);
       m_lastLoggedPresetIdx = preset;
+#endif
   }
 }
 
