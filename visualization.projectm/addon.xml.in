@@ -114,7 +114,7 @@
     <description lang="zh_CN">projectM 是一个音乐可视化效果。它是 Unix 世界中最好的。它的伟大来自于社区的辛苦工作。使用者可以创建预设参数把音乐和难以置信的可视化效果连接起来。试试吧！&#10;projectM 可视化效果是用 OpenGL 按照 LGPL 协议对 Milkdrop 的重新实现&#10;projectM 所要求的仅是一块有 3D 加速功能的显卡和你喜爱的音乐。</description>
     <description lang="zh_TW">projectM是一個令人驚豔的音樂視覺效果。它是Unix世界中最好的。projectM的偉大成果來自於社群創作者的投入與心血。使用者可以創建把音樂和難以置信的視覺效果連接起來的預設值。快來嘗鮮一下吧！&#10;projectM視覺效果是用OpenGL按照LGPL協議對Milkdrop的重新實現&#10;projectM所要求的僅是一張有3D加速功能的影像顯示卡和您喜愛的音樂。</description>
     <platform>@PLATFORM@</platform>
-    <license>GPL-2.0</license>
+    <license>GPL-2.0-or-later</license>
     <source>https://github.com/xbmc/visualization.projectm</source>
     <assets>
       <icon>resources/icon.png</icon>
