@@ -7,6 +7,7 @@
           <constraints>
             <options>
               <option label="30020">0</option> <!-- bltc201 -->
+              <option label="30030">10</option> <!-- Eyetune -->
               <option label="30021">1</option> <!-- Milkdrop -->
               <option label="30022">2</option> <!-- Milkdrop 1.04 -->
               <option label="30023">3</option> <!-- Milkdrop 2.00 -->

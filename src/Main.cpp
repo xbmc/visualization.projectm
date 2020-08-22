@@ -354,6 +354,11 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
       m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/tests");
       break;
 
+    case 10:
+      m_UserPackFolder = false;
+      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_eyetune");
+      break;
+
     default:
       kodi::Log(ADDON_LOG_FATAL, "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)", __func__, pvalue);
       break;
