@@ -9,6 +9,7 @@ configure_file(${PROJECT_SOURCE_DIR}/src/libprojectM/config.inp.in ${PROJECT_SOU
 
 set(SOURCES src/libprojectM/ConfigFile.cpp
             src/libprojectM/fftsg.cpp
+            src/libprojectM/FileScanner.cpp
             src/libprojectM/KeyHandler.cpp
             src/libprojectM/PCM.cpp
             src/libprojectM/PipelineMerger.cpp
@@ -77,6 +78,7 @@ set(HEADERS src/libprojectM/BackgroundWorker.h
             src/libprojectM/event.h
             src/libprojectM/fatal.h
             src/libprojectM/fftsg.h
+            src/libprojectM/FileScanner.hpp
             src/libprojectM/glError.h
             src/libprojectM/lvtoprojectM.h
             src/libprojectM/projectM-opengl.h

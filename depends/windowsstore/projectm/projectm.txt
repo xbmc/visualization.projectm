@@ -1,1 +1,1 @@
-projectm https://github.com/projectM-visualizer/projectm/releases/download/v3.1.2/projectM-src-3.1.2.tar.gz
+projectm https://github.com/projectM-visualizer/projectm/releases/download/v3.1.7/projectM-3.1.7.tar.gz
