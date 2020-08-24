@@ -116,7 +116,11 @@ msgctxt "#30029"
 msgid "Tests"
 msgstr ""
 
-#empty strings from id 30030 to 30049
+msgctxt "#30030"
+msgid "Eyetune"
+msgstr ""
+
+#empty strings from id 30031 to 30049
 #setting value formats
 
 msgctxt "#30050"

@@ -1,19 +1,6 @@
-From 8fcba9e6cc58d8fc5fac4fa740ecd2b523777a06 Mon Sep 17 00:00:00 2001
-From: Alwin Esch <alwin.esch@web.de>
-Date: Sat, 5 Oct 2019 01:52:11 +0200
-Subject: [PATCH] add angle to GL include and become Win working
-
----
- src/libprojectM/Renderer/ShaderEngine.cpp   | 2 +-
- src/libprojectM/Renderer/TextureManager.cpp | 1 +
- src/libprojectM/projectM-opengl.h           | 4 ++++
- 3 files changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/src/libprojectM/Renderer/ShaderEngine.cpp b/src/libprojectM/Renderer/ShaderEngine.cpp
-index b486d14..6abf572 100755
 --- a/src/libprojectM/Renderer/ShaderEngine.cpp
 +++ b/src/libprojectM/Renderer/ShaderEngine.cpp
-@@ -1224,7 +1224,7 @@ void ShaderEngine::reset()
+@@ -1226,7 +1226,7 @@ void ShaderEngine::reset()
  
  GLuint ShaderEngine::CompileShaderProgram(const std::string & VertexShaderCode, const std::string & FragmentShaderCode, const std::string & shaderTypeString){
  
@@ -22,25 +9,11 @@ index b486d14..6abf572 100755
  	GLenum err = glewInit();
  #endif /** WIN32 */
  
-diff --git a/src/libprojectM/Renderer/TextureManager.cpp b/src/libprojectM/Renderer/TextureManager.cpp
-index 3d3bb17..940edf2 100755
---- a/src/libprojectM/Renderer/TextureManager.cpp
-+++ b/src/libprojectM/Renderer/TextureManager.cpp
-@@ -8,6 +8,7 @@
- 
- #ifdef WIN32
- #include "dirent.h"
-+#include <minmax.h>
- #endif
- 
- #ifdef __unix__
-diff --git a/src/libprojectM/projectM-opengl.h b/src/libprojectM/projectM-opengl.h
-index 3e565f2..9c34192 100755
 --- a/src/libprojectM/projectM-opengl.h
 +++ b/src/libprojectM/projectM-opengl.h
-@@ -30,8 +30,12 @@
- #include <EGL/eglext.h>
+@@ -32,8 +32,12 @@
  #elif defined(_WIN32)
+ #define GLM_FORCE_CXX03
  # include <windows.h>
 +#if defined(HAS_ANGLE)
 +#include <angle_gl.h>
@@ -51,6 +24,3 @@ index 3e565f2..9c34192 100755
  #else /* linux/unix/other */
  # ifdef USE_GLES
  #  include <GLES3/gl3.h>
--- 
-2.21.0
-
