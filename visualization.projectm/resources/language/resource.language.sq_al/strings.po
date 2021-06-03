@@ -10,10 +10,10 @@ msgstr ""
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: XBMC Translation Team\n"
 "Language-Team: Albanian (http://www.transifex.com/projects/p/xbmc-main/language/sq/)\n"
+"Language: sq\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sq\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#30000"
@@ -67,6 +67,55 @@ msgstr "Regjistri i paravendosurve i zgjedhur nga përdoruesi"
 msgctxt "#30012"
 msgid "User Preset Folder"
 msgstr "Regjistri i paravendosurve i përdoruesit"
+
+msgctxt "#30013"
+msgid "General"
+msgstr ""
+
+# empty strings from id 30013 to 30019
+msgctxt "#30020"
+msgid "bltc201"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Milkdrop"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Milkdrop 1.04"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Milkdrop 2.00"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Mischa's Collection"
+msgstr ""
+
+msgctxt "#30025"
+msgid "projectM"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Stock"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Tryptonaut"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Yin"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Tests"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Eyetune"
+msgstr ""
 
 msgctxt "#30050"
 msgid "{0:d} sec"
