@@ -16,6 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgctxt "Addon Summary"
+msgid "projectM takes you flying through the soundwaves you're hearing"
+msgstr ""projectM" ще Ви отведе на пътешествие между звуковите вълни, които чувате"
+
+msgctxt "Addon Description"
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
+msgstr ""projectM" е страхотна визуализация, плод на упорит труд от страна на общността. В света на Unix не съществува нищо по-добро. Потребители, като Вас, създават предварително комбинации от настройки, които се ползват като модел за визуализацията и така свързват звука с невероятни визуални ефекти. Пробвайте!&#10;Визуализацията "projectM" е преработка на Milkdrop под лиценза LGPL, основана на OpenGL.&#10;"projectM" изисква видео карта с 3D ускорение и любимата Ви музика."
+
 msgctxt "#30000"
 msgid "Render Quality"
 msgstr "Качество на рендването"
