@@ -24,7 +24,7 @@ msgctxt "Addon Description"
 msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
 msgstr ""
 
-#settings labels
+# settings labels
 msgctxt "#30000"
 msgid "Render Quality"
 msgstr ""
@@ -81,7 +81,7 @@ msgctxt "#30013"
 msgid "General"
 msgstr ""
 
-#empty strings from id 30013 to 30019
+# empty strings from id 30013 to 30019
 msgctxt "#30020"
 msgid "bltc201"
 msgstr ""
@@ -126,8 +126,8 @@ msgctxt "#30030"
 msgid "Eyetune"
 msgstr ""
 
-#empty strings from id 30031 to 30049
-#setting value formats
+# empty strings from id 30031 to 30049
+# setting value formats
 msgctxt "#30050"
 msgid "{0:d} sec"
 msgstr ""
