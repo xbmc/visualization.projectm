@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: XBMC Main\n"
 "Report-Msgid-Bugs-To: translations@kodi.tv\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2021-07-28 21:29+0000\n"
+"PO-Revision-Date: 2021-07-29 20:38+0000\n"
 "Last-Translator: Christian Gade <gade@kodi.tv>\n"
 "Language-Team: Danish <https://kodi.weblate.cloud/projects/kodi-add-ons-look-and-feel/visualization-projectm/da_dk/>\n"
 "Language: da_dk\n"
@@ -23,7 +23,7 @@ msgstr "projectM tager dig på en flyvetur gennem lydbølgerne, du lytter til"
 
 msgctxt "Addon Description"
 msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
-msgstr "projectM er en fantastisk musikvisualisering. Der findes intet bedre i Unix-verdenen. projectMs storhed kommer fra brugerbasens hårde arbejde. Brugere, som dig selv, kan skabe forudindstillinger, som forbinder musik med utrolige visualiseringer. Prøv det!&#10;projectM Visualization er en LGPLed reimplementation af Milkdrop under OpenGL.&#10;Alt hvad projectM kræver er et grafikkort med 3D-acceleration og din yndlingsmusik."
+msgstr "projectM er en fantastisk musikvisualisering. Der findes intet bedre i Unix-verdenen. projectMs storhed kommer fra brugerbasens hårde arbejde. Brugere, som dig selv, kan skabe forudindstillinger, som forbinder musik med utrolige visualiseringer. Prøv det!&#10;projectM Visualization er en LGPLed reimplementering af Milkdrop under OpenGL.&#10;Alt hvad projectM kræver er et grafikkort med 3D-acceleration og din yndlingsmusik."
 
 msgctxt "#30000"
 msgid "Render Quality"
@@ -79,52 +79,52 @@ msgstr "Brugermappe med forudindstillinger"
 
 msgctxt "#30013"
 msgid "General"
-msgstr ""
+msgstr "Generel"
 
 # empty strings from id 30013 to 30019
 msgctxt "#30020"
 msgid "bltc201"
-msgstr ""
+msgstr "bltc201"
 
 msgctxt "#30021"
 msgid "Milkdrop"
-msgstr ""
+msgstr "Milkdrop"
 
 msgctxt "#30022"
 msgid "Milkdrop 1.04"
-msgstr ""
+msgstr "Milkdrop 1.04"
 
 msgctxt "#30023"
 msgid "Milkdrop 2.00"
-msgstr ""
+msgstr "Milkdrop 2.00"
 
 msgctxt "#30024"
 msgid "Mischa's Collection"
-msgstr ""
+msgstr "Mischas samling"
 
 msgctxt "#30025"
 msgid "projectM"
-msgstr ""
+msgstr "projectM"
 
 msgctxt "#30026"
 msgid "Stock"
-msgstr ""
+msgstr "Lager"
 
 msgctxt "#30027"
 msgid "Tryptonaut"
-msgstr ""
+msgstr "Tryptonaut"
 
 msgctxt "#30028"
 msgid "Yin"
-msgstr ""
+msgstr "Yin"
 
 msgctxt "#30029"
 msgid "Tests"
-msgstr ""
+msgstr "Tests"
 
 msgctxt "#30030"
 msgid "Eyetune"
-msgstr ""
+msgstr "Eyetune"
 
 msgctxt "#30050"
 msgid "{0:d} sec"
