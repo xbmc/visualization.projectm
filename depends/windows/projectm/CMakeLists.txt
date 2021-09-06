@@ -55,6 +55,7 @@ set(SOURCES src/libprojectM/ConfigFile.cpp
             src/libprojectM/Renderer/RenderItemMatcher.cpp
             src/libprojectM/Renderer/Shader.cpp
             src/libprojectM/Renderer/ShaderEngine.cpp
+            src/libprojectM/Renderer/StaticGlShaders.cpp
             src/libprojectM/Renderer/Texture.cpp
             src/libprojectM/Renderer/TextureManager.cpp
             src/libprojectM/Renderer/VideoEcho.cpp
@@ -140,6 +141,7 @@ set(HEADERS src/libprojectM/BackgroundWorker.h
             src/libprojectM/Renderer/RenderItemMergeFunction.hpp
             src/libprojectM/Renderer/ShaderEngine.hpp
             src/libprojectM/Renderer/Shader.hpp
+            src/libprojectM/Renderer/StaticGlShaders.h
             src/libprojectM/Renderer/Texture.hpp
             src/libprojectM/Renderer/TextureManager.hpp
             src/libprojectM/Renderer/Transformation.hpp
