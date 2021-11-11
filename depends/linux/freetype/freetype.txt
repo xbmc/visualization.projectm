@@ -1,1 +1,0 @@
-freetype http://mirrors.kodi.tv/build-deps/sources/freetype-2.10.4.tar.xz

@@ -1,1 +1,0 @@
-ftgl https://github.com/frankheckenbach/ftgl/archive/refs/tags/v2.4.0.tar.gz
