@@ -56,25 +56,25 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.windowHeight = Height();
   m_configPM.aspectCorrection = true;
   m_configPM.easterEgg = 0.0;
-  m_configPM.titleFontURL = kodi::GetAddonPath("resources/projectM/fonts/Vera.ttf");
-  m_configPM.menuFontURL = kodi::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
-  m_configPM.datadir = kodi::GetAddonPath("resources/projectM");
-  m_lastPresetIdx = kodi::GetSettingInt("last_preset_idx");
+  m_configPM.titleFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/Vera.ttf");
+  m_configPM.menuFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
+  m_configPM.datadir = kodi::addon::GetAddonPath("resources/projectM");
+  m_lastPresetIdx = kodi::addon::GetSettingInt("last_preset_idx");
 #ifdef DEBUG
   m_lastLoggedPresetIdx = m_lastPresetIdx;
 #endif
 
-  m_configPM.textureSize = kodi::GetSettingInt("quality");
-  m_configPM.shuffleEnabled = kodi::GetSettingBoolean("shuffle");
+  m_configPM.textureSize = kodi::addon::GetSettingInt("quality");
+  m_configPM.shuffleEnabled = kodi::addon::GetSettingBoolean("shuffle");
 
-  m_lastLockStatus = kodi::GetSettingBoolean("last_locked_status");
-  m_lastPresetDir = kodi::GetSettingString("last_preset_folder");
-  m_configPM.smoothPresetDuration = kodi::GetSettingInt("smooth_duration");
-  m_configPM.presetDuration = kodi::GetSettingInt("preset_duration");
+  m_lastLockStatus = kodi::addon::GetSettingBoolean("last_locked_status");
+  m_lastPresetDir = kodi::addon::GetSettingString("last_preset_folder");
+  m_configPM.smoothPresetDuration = kodi::addon::GetSettingInt("smooth_duration");
+  m_configPM.presetDuration = kodi::addon::GetSettingInt("preset_duration");
 
-  ChoosePresetPack(kodi::GetSettingInt("preset_pack"));
-  ChooseUserPresetFolder(kodi::GetSettingString("user_preset_folder"));
-  m_configPM.beatSensitivity = kodi::GetSettingInt("beat_sens") * 2;
+  ChoosePresetPack(kodi::addon::GetSettingInt("preset_pack"));
+  ChooseUserPresetFolder(kodi::addon::GetSettingString("user_preset_folder"));
+  m_configPM.beatSensitivity = kodi::addon::GetSettingInt("beat_sens") * 2;
 
 #ifndef _WIN32
   InitProjectM();
@@ -86,9 +86,9 @@ CVisualizationProjectM::~CVisualizationProjectM()
   unsigned int lastindex = 0;
   m_projectM->selectedPresetIndex(lastindex);
   m_shutdown = true;
-  kodi::SetSettingInt("last_preset_idx", lastindex);
-  kodi::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
-  kodi::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
+  kodi::addon::SetSettingInt("last_preset_idx", lastindex);
+  kodi::addon::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
+  kodi::addon::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
 
   if (m_projectM)
   {
@@ -232,7 +232,7 @@ bool CVisualizationProjectM::IsLocked()
 //-- UpdateSetting ------------------------------------------------------------
 // Handle setting change request from Kodi
 //-----------------------------------------------------------------------------
-ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue)
+ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
 {
   if (settingName.empty() || settingValue.empty())
     return ADDON_STATUS_UNKNOWN;
@@ -307,56 +307,56 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 
     case 0:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_bltc201");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_bltc201");
       break;
 
     case 1:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_milkdrop");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop");
       break;
 
     case 2:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_milkdrop_104");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_104");
       break;
 
     case 3:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_milkdrop_200");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_200");
       break;
 
     case 4:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_mischa_collection");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_mischa_collection");
       break;
 
     case 5:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_projectM");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_projectM");
 
     case 6:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_stock");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_stock");
       break;
 
     case 7:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_tryptonaut");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_tryptonaut");
       break;
 
     case 8:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_yin");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_yin");
       break;
 
     case 9:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/tests");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/tests");
       break;
 
     case 10:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::GetAddonPath("resources/projectM/presets/presets_eyetune");
+      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_eyetune");
       break;
 
     default:

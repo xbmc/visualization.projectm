@@ -47,7 +47,7 @@ d4rk@xbmc.org
 
 #include <libprojectM/projectM.hpp>
 
-class ATTRIBUTE_HIDDEN CVisualizationProjectM
+class ATTR_DLL_LOCAL CVisualizationProjectM
   : public kodi::addon::CAddonBase,
     public kodi::addon::CInstanceVisualization
 {
@@ -66,7 +66,7 @@ public:
   int GetActivePreset() override;
   bool RandomPreset() override;
   bool IsLocked() override;
-  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::CSettingValue& settingValue) override;
+  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue) override;
 
 private:
   bool InitProjectM();
