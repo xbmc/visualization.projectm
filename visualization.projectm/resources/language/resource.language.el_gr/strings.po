@@ -21,8 +21,12 @@ msgid "projectM takes you flying through the soundwaves you're hearing"
 msgstr "Το projectM σας ταξιδεύει μέσα στα ηχητικά κύματα που ακούτε"
 
 msgctxt "Addon Description"
-msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
-msgstr "Το projectM είναι ένας φοβερός μουσικός οπτικοποιητής. Δεν υπάρχει τίποτα καλύτερο στον κόσμο του Unix. Το μεγαλείο του projectM πηγάζει από τη σκληρή δουλειά της κοινότητας. Χρήστες όπως εσείς μπορούν να δημιουργήσουν προρυθμίσεις συνδέοντας τη μουσική με απίστευτες απεικονίσεις. Δοκιμάστε το!&#10;Η Οπτικοποίηση projectM αποτελεί μία νέα LGPL υλοποίηση του Milkdrop υπό το OpenGL&#10;Το μόνο που απαιτείται από το projectM είναι μία κάρτα γραφικών με τρισδιάστατη (3D) επιτάχυνση, και την αγαπημένη σας μουσική."
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!
+projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL
+All projectM requires is a video card with 3D acceleration and your favourite music."
+msgstr "Το projectM είναι ένας φοβερός μουσικός οπτικοποιητής. Δεν υπάρχει τίποτα καλύτερο στον κόσμο του Unix. Το μεγαλείο του projectM πηγάζει από τη σκληρή δουλειά της κοινότητας. Χρήστες όπως εσείς μπορούν να δημιουργήσουν προρυθμίσεις συνδέοντας τη μουσική με απίστευτες απεικονίσεις. Δοκιμάστε το!
+Η Οπτικοποίηση projectM αποτελεί μία νέα LGPL υλοποίηση του Milkdrop υπό το OpenGL
+Το μόνο που απαιτείται από το projectM είναι μία κάρτα γραφικών με τρισδιάστατη (3D) επιτάχυνση, και την αγαπημένη σας μουσική."
 
 msgctxt "#30000"
 msgid "Render Quality"

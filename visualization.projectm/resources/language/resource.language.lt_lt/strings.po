@@ -22,8 +22,12 @@ msgid "projectM takes you flying through the soundwaves you're hearing"
 msgstr "projectM nukelia Jus į nuostabų skrydį virš debesų, ištiesų fantastiškų garsų gausą"
 
 msgctxt "Addon Description"
-msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
-msgstr "ProjectM yra išskirtinė muzikos vizualizacija. Nėra nieko geriau, Unix pasaulyje. ProjectM spindesys tai sunkus darbas bendruomenėje. Naudotojai, tokie kaip Jūs galite sukurti ir suderinti muziką su puikiais vizualizacijos efektais. Sužinokite!&#10;ProjectM yra įgyvendinimas iš Milkdrop pagal LGPL licenciją, ir naudoja OpenGL&#10;Viskas ko reikia projectM tai vaizdo plokštės su 3D akceleracija (greitėjimu) ir geros muzikos."
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!
+projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL
+All projectM requires is a video card with 3D acceleration and your favourite music."
+msgstr "ProjectM yra išskirtinė muzikos vizualizacija. Nėra nieko geriau, Unix pasaulyje. ProjectM spindesys tai sunkus darbas bendruomenėje. Naudotojai, tokie kaip Jūs galite sukurti ir suderinti muziką su puikiais vizualizacijos efektais. Sužinokite!
+ProjectM yra įgyvendinimas iš Milkdrop pagal LGPL licenciją, ir naudoja OpenGL
+Viskas ko reikia projectM tai vaizdo plokštės su 3D akceleracija (greitėjimu) ir geros muzikos."
 
 msgctxt "#30000"
 msgid "Render Quality"

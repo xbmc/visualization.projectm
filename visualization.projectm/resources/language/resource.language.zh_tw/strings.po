@@ -21,8 +21,12 @@ msgid "projectM takes you flying through the soundwaves you're hearing"
 msgstr "projectM帶著您一起翱翔並飛越聆聽中的音樂浪潮"
 
 msgctxt "Addon Description"
-msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
-msgstr "projectM是一個令人驚豔的音樂視覺效果。它是Unix世界中最好的。projectM的偉大成果來自於社群創作者的投入與心血。使用者可以創建把音樂和難以置信的視覺效果連接起來的預設值。快來嘗鮮一下吧！&#10;projectM視覺效果是用OpenGL按照LGPL協議對Milkdrop的重新實現&#10;projectM所要求的僅是一張有3D加速功能的影像顯示卡和您喜愛的音樂。"
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!
+projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL
+All projectM requires is a video card with 3D acceleration and your favourite music."
+msgstr "projectM是一個令人驚豔的音樂視覺效果。它是Unix世界中最好的。projectM的偉大成果來自於社群創作者的投入與心血。使用者可以創建把音樂和難以置信的視覺效果連接起來的預設值。快來嘗鮮一下吧！
+projectM視覺效果是用OpenGL按照LGPL協議對Milkdrop的重新實現
+projectM所要求的僅是一張有3D加速功能的影像顯示卡和您喜愛的音樂。"
 
 msgctxt "#30000"
 msgid "Render Quality"
