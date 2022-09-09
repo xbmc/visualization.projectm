@@ -55,9 +55,9 @@ public:
   CVisualizationProjectM();
   ~CVisualizationProjectM() override;
 
-  bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
+  bool Start(int channels, int samplesPerSec, int bitsPerSample, const std::string& songName) override;
   void Render() override;
-  void AudioData(const float* audioData, int audioDataLength, float *freqData, int freqDataLength) override;
+  void AudioData(const float* audioData, size_t audioDataLength) override;
   bool GetPresets(std::vector<std::string>& presets) override;
   bool LoadPreset(int select) override;
   bool PrevPreset() override;
