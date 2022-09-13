@@ -22,8 +22,8 @@ msgid "projectM takes you flying through the soundwaves you're hearing"
 msgstr "projectM vous entraine à travers les ondes sonores que vous écoutez"
 
 msgctxt "Addon Description"
-msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
-msgstr "projectM est un fantastique visualiseur musical. Il n'y a rien de mieux dans l'univers Unix. L'ampleur de projectM vient du travail énorme de la communauté. Des utilisateurs comme vous peuvent créer des préréglages qui connecteront la musique avec des visuels incroyables. Essayez-le!&#10;La visualisation projectM est une réalisation sous LGPL de Milkdrop en OpenGL.&#10;Le seul pré-requis pour projectM est une carte graphique avec accélération 3D et votre musique favorite."
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it![CR]projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL[CR]All projectM requires is a video card with 3D acceleration and your favourite music."
+msgstr "projectM est un fantastique visualiseur musical. Il n'y a rien de mieux dans l'univers Unix. L'ampleur de projectM vient du travail énorme de la communauté. Des utilisateurs comme vous peuvent créer des préréglages qui connecteront la musique avec des visuels incroyables. Essayez-le![CR]La visualisation projectM est une réalisation sous LGPL de Milkdrop en OpenGL.[CR]Le seul pré-requis pour projectM est une carte graphique avec accélération 3D et votre musique favorite."
 
 msgctxt "#30000"
 msgid "Render Quality"
