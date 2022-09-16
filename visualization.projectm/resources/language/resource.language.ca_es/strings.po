@@ -21,8 +21,8 @@ msgid "projectM takes you flying through the soundwaves you're hearing"
 msgstr "projectM et fa volar a través de les ones de so que escoltes"
 
 msgctxt "Addon Description"
-msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
-msgstr "El projectM és un visualitzador de música impressionant. No hi ha res millor al món Unix. La grandesa de projectM prové del dur treball de la comunitat. Els usuaris com tu poden crear predefinits que connecten la música amb visualitzacions increibles. Prova-ho!&#10;La Visualització projectM és una re-implementació en LGPL de Milkdrop baix OpenGL&#10;Tot el que projectM requereix és una tarja amb acceleració 3D i la teva música preferida."
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it![CR]projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL[CR]All projectM requires is a video card with 3D acceleration and your favourite music."
+msgstr "El projectM és un visualitzador de música impressionant. No hi ha res millor al món Unix. La grandesa de projectM prové del dur treball de la comunitat. Els usuaris com tu poden crear predefinits que connecten la música amb visualitzacions increibles. Prova-ho![CR]La Visualització projectM és una re-implementació en LGPL de Milkdrop baix OpenGL[CR]Tot el que projectM requereix és una tarja amb acceleració 3D i la teva música preferida."
 
 msgctxt "#30000"
 msgid "Render Quality"
