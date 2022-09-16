@@ -97,7 +97,7 @@ CVisualizationProjectM::~CVisualizationProjectM()
   }
 }
 
-bool CVisualizationProjectM::Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName)
+bool CVisualizationProjectM::Start(int channels, int samplesPerSec, int bitsPerSample, const std::string& songName)
 {
 #ifdef _WIN32
   InitProjectM();
@@ -116,7 +116,7 @@ bool CVisualizationProjectM::Start(int channels, int samplesPerSec, int bitsPerS
 //-- Audiodata ----------------------------------------------------------------
 // Called by Kodi to pass new audio data to the vis
 //-----------------------------------------------------------------------------
-void CVisualizationProjectM::AudioData(const float* pAudioData, int iAudioDataLength, float *pFreqData, int iFreqDataLength)
+void CVisualizationProjectM::AudioData(const float* pAudioData, size_t iAudioDataLength)
 {
   std::unique_lock<std::mutex> lock(m_pmMutex);
   if (m_projectM)
