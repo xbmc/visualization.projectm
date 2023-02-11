@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: http://trac.xbmc.org/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2021-09-18 12:36+0000\n"
 "Last-Translator: Minho Park <parkmino@gmail.com>\n"
@@ -22,7 +22,7 @@ msgid "projectM takes you flying through the soundwaves you're hearing"
 msgstr "projectM 은 사운드웨이브 속으로 날아가는듯한 효과를 보여줍니다"
 
 msgctxt "Addon Description"
-msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it!&#10;projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL&#10;All projectM requires is a video card with 3D acceleration and your favourite music."
+msgid "projectM is an awesome music visualiser. There is nothing better in the world of Unix. projectM's greatness comes from the hard work of the community. Users like you can create presets that connect music with incredible visuals. Try it![CR]projectM Visualisation is an LGPL'ed reimplementation of Milkdrop under OpenGL[CR]All projectM requires is a video card with 3D acceleration and your favourite music."
 msgstr "projectM은 멋진 음악 시각화입니다. Unix에는 이것보다 좋은것은 없습니다. projectM은 많은 사람들에 의해 개발되었습니다. 여러분과 같은 유저들이 음악을 표현하는 프리셋을 만들었습니다. projectM 음악시각화는 OpenGL에서 작동하도록 Milkdrop를 새로 만든것입니다. 모든 projectM은 3D 가속이 되는 비디오카드와 음악이 필요합니다."
 
 msgctxt "#30000"
