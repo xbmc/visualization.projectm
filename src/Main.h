@@ -44,8 +44,10 @@ d4rk@xbmc.org
 
 #include <kodi/addon-instance/Visualization.h>
 #include <mutex>
+#include <atomic>
 
-#include <libprojectM/projectM.hpp>
+#include <projectM-4/projectM.h>
+#include <projectM-4/playlist.h>
 
 class ATTR_DLL_LOCAL CVisualizationProjectM
   : public kodi::addon::CAddonBase,
@@ -72,27 +74,29 @@ private:
   bool InitProjectM();
   void ChoosePresetPack(int pvalue);
   void ChooseUserPresetFolder(std::string pvalue);
+  std::string GetBasename(std::string fullPath);
+  void ReloadPlaylist();
+  static void PresetSwitchedEvent(bool isHardCut, unsigned int index, void* context);
 
-  projectM* m_projectM;
-  projectM::Settings m_configPM;
+  projectm_handle m_projectM{nullptr};
+  projectm_playlist_handle m_playlist{nullptr};
   std::mutex m_pmMutex;
-  bool m_UserPackFolder;
-  std::string m_lastPresetDir;
-  int m_lastPresetIdx;
+  bool m_UserPackFolder{false};
+  std::string m_presetDir;
+  std::atomic_int m_lastPresetIdx{};
 #ifdef DEBUG
-  unsigned int m_lastLoggedPresetIdx;
+  unsigned int m_lastLoggedPresetIdx{};
 #endif
-  bool m_lastLockStatus;
-  bool m_shutdown = false;
+  bool m_lastLockStatus{false};
+  std::atomic_bool m_shutdown{false};
 
 #ifdef _WIN32
   bool m_presetsSet = false;
 #endif
 
   // some projectm globals
-  const static int maxSamples=512;
-  const static int texsize=512;
-  const static int gx=40,gy=30;
-  const static int fps=100;
+  const static int gx{40};
+  const static int gy{30};
+  const static int fps{60};
 };
 
