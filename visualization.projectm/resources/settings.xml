@@ -54,49 +54,37 @@
           <default>true</default>
           <control type="toggle" />
         </setting>
-        <setting id="quality" type="integer" label="30000" help="0">
-          <default>512</default>
+        <setting id="smooth_duration" type="number" label="30006" help="0">
+          <default>3.0</default>
           <constraints>
-            <options>
-              <option label="30001">256</option>
-              <option label="30002">512</option>
-              <option label="30003">1024</option>
-              <option label="30004">2048</option>
-            </options>
+            <minimum>0.0</minimum>
+            <step>0.1</step>
+            <maximum>10.0</maximum>
           </constraints>
-          <control type="spinner" format="string" />
+            <control type="slider" format="number">
+                <popup>false</popup>
+            </control>
         </setting>
-        <setting id="smooth_duration" type="integer" label="30006" help="0">
-          <default>10</default>
-          <constraints>
-            <minimum>5</minimum>
-            <step>5</step>
-            <maximum>50</maximum>
-          </constraints>
-          <control type="spinner" format="string">
-            <formatlabel>30050</formatlabel>
-          </control>
-        </setting>
-        <setting id="preset_duration" type="integer" label="30007" help="0">
+        <setting id="preset_duration" type="number" label="30007" help="0">
           <default>20</default>
           <constraints>
-            <minimum>5</minimum>
-            <step>5</step>
-            <maximum>50</maximum>
+            <minimum>1.0</minimum>
+            <step>1.0</step>
+            <maximum>60.0</maximum>
           </constraints>
-          <control type="spinner" format="string">
-            <formatlabel>30050</formatlabel>
-          </control>
+            <control type="slider" format="number">
+                <popup>false</popup>
+            </control>
         </setting>
-        <setting id="beat_sens" type="integer" label="30008" help="0">
-          <default>20</default>
+        <setting id="beat_sens" type="number" label="30008" help="0">
+          <default>1.0</default>
           <constraints>
-            <minimum>0</minimum>
-            <step>10</step>
-            <maximum>100</maximum>
+            <minimum>0.0</minimum>
+            <step>0.05</step>
+            <maximum>2.0</maximum>
           </constraints>
-          <control type="spinner" format="string">
-            <formatlabel>30051</formatlabel>
+          <control type="slider" format="number">
+              <popup>false</popup>
           </control>
         </setting>
       </group>
