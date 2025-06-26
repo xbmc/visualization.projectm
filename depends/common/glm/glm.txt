@@ -1,1 +1,1 @@
-glm https://github.com/g-truc/glm/releases/download/0.9.9.5/glm-0.9.9.5.7z
+https://github.com/g-truc/glm/releases/download/1.0.1/glm-1.0.1-light.7z
