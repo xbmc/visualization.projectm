@@ -4,6 +4,7 @@ project(visualization.projectm)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
+find_package(glm REQUIRED)
 find_package(ProjectM REQUIRED)
 
 if(NOT WIN32 AND (APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM))
