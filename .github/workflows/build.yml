@@ -1,0 +1,57 @@
+name: Build
+on: [push, pull_request]
+env:
+  app_id: visualization.projectm
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "GCC build"
+            CC: gcc
+            CXX: g++
+          - name: "Clang build"
+            CC: clang
+            CXX: clang++
+    steps:
+    - name: Checkout Kodi repo
+      uses: actions/checkout@v5
+      with:
+        repository: xbmc/xbmc
+        ref: master
+        path: xbmc
+    - name: Checkout add-on repo
+      uses: actions/checkout@v5
+      with:
+        path: ${{ env.app_id }}
+    - name: Prepare
+      run: |
+        mkdir -p ${{ github.workspace }}/xbmc/cmake/addons/addons/${app_id}
+        echo ${app_id} ${{ github.workspace }}/${app_id} > ${{ github.workspace }}/xbmc/cmake/addons/addons/${app_id}/${app_id}.txt
+    - name: Install GL deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl-dev
+    - name: Configure
+      env:
+        CC: ${{ matrix.CC }}
+        CXX: ${{ matrix.CXX }}
+      run: |
+        cmake \
+          -B ${app_id}/build \
+          -DADDONS_TO_BUILD=${app_id} \
+          -DADDON_SRC_PREFIX=${{ github.workspace }} \
+          -DADDONS_DEFINITION_DIR=${{ github.workspace }}/xbmc/cmake/addons/addons \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/xbmc/addons \
+          -DPACKAGE_ZIP=1 \
+          ${{ github.workspace }}/xbmc/cmake/addons
+    - name: Build
+      env:
+        CC: ${{ matrix.CC }}
+        CXX: ${{ matrix.CXX }}
+      run: |
+        make -C ${app_id}/build -j$(getconf _NPROCESSORS_ONLN)
