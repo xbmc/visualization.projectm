@@ -1,0 +1,14 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -153,11 +153,6 @@
+ 
+ AC_PROG_MKDIR_P
+ 
+-AS_IF([echo ${host} | grep -Fq android], [],
+-  [AX_CHECK_COMPILE_FLAG([-stdlib=libc++], [
+-                        CXXFLAGS="$CXXFLAGS -stdlib=libc++"])
+-])
+-
+ AX_CHECK_COMPILE_FLAG([-std=c++11], [
+                         CXXFLAGS="$CXXFLAGS -std=c++11"])
+ 
