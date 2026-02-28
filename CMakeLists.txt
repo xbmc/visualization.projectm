@@ -5,7 +5,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Kodi REQUIRED)
 find_package(glm REQUIRED)
-find_package(ProjectM REQUIRED)
+find_package(projectM-Eval REQUIRED)
+find_package(projectM4 REQUIRED COMPONENTS Playlist)
 
 if(NOT WIN32 AND (APP_RENDER_SYSTEM STREQUAL "gl" OR NOT APP_RENDER_SYSTEM))
   find_package(OpenGl REQUIRED)
@@ -19,10 +20,9 @@ else()
   add_definitions(${OPENGLES_DEFINITIONS})
 endif()
 
-list(APPEND DEPLIBS ${PROJECTM_LIBRARIES})
+list(APPEND DEPLIBS libprojectM::playlist projectM::Eval)
 
 include_directories(${includes}
-                    ${PROJECTM_INCLUDE_DIRS}
                     ${KODI_INCLUDE_DIR}/..) # Hack way with "/..", need bigger Kodi cmake rework to match right include ways
 
 set(PM_SOURCES src/Main.cpp)
