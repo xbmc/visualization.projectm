@@ -1,1 +1,1 @@
-dirent https://github.com/tronkko/dirent/archive/1.23.2.zip
+dirent https://github.com/tronkko/dirent/archive/1.26.zip
