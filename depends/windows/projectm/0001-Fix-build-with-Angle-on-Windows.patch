@@ -1,0 +1,36 @@
+From 0dfc2502047990e53d2c9c046184cd06beef7624 Mon Sep 17 00:00:00 2001
+From: Garrett Brown <themagnificentmrb@gmail.com>
+Date: Sat, 28 Feb 2026 19:55:58 -0800
+Subject: [PATCH] Fix build with Angle on Windows
+
+Error was:
+
+  lib/cmake/projectM4/projectM4Config.cmake:34 (find_dependency)
+  Could NOT find OpenGL (missing: GLES3)
+---
+ src/libprojectM/projectM4Config.cmake.in | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/libprojectM/projectM4Config.cmake.in b/src/libprojectM/projectM4Config.cmake.in
+index 0b1639b1..cdcefe55 100644
+--- a/src/libprojectM/projectM4Config.cmake.in
++++ b/src/libprojectM/projectM4Config.cmake.in
+@@ -6,8 +6,13 @@ include(CMakeFindDependencyMacro)
+ 
+ if(NOT "@ENABLE_EMSCRIPTEN@") # ENABLE_EMSCRIPTEN
+     if("@ENABLE_GLES@") # ENABLE_GLES
+-        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+-        find_dependency(OpenGL COMPONENTS GLES3)
++        # On Windows desktop we may be using ANGLE/EGL for GLES.
++        # CMake's FindOpenGL(GLES3) generally fails or conflicts, so don't
++        # import an OpenGL dependency from this package config.
++        if(NOT WIN32)
++            list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
++            find_dependency(OpenGL COMPONENTS GLES3)
++        endif()
+     else()
+         find_dependency(OpenGL)
+     endif()
+-- 
+2.52.0
+
