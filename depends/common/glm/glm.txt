@@ -1,1 +1,1 @@
-glm https://github.com/g-truc/glm/archive/1.0.1.tar.gz
+glm https://github.com/g-truc/glm/releases/download/1.0.3/glm-1.0.3.zip
