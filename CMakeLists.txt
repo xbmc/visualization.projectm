@@ -27,7 +27,6 @@ include_directories(${includes}
 
 set(PM_SOURCES src/Main.cpp)
 set(PM_HEADERS src/Main.h)
-set(PM_CUSTOM_DATA ${PROJECTM_PKGDATADIR})
 
 build_addon(visualization.projectm PM DEPLIBS)
 
