@@ -55,7 +55,7 @@ public:
   CVisualizationProjectM();
   ~CVisualizationProjectM() override;
 
-  bool Start(int channels, int samplesPerSec, int bitsPerSample, const std::string& songName) override;
+  bool Init() override;
   void Render() override;
   void AudioData(const float* audioData, size_t audioDataLength) override;
   bool GetPresets(std::vector<std::string>& presets) override;
@@ -84,10 +84,6 @@ private:
 #endif
   bool m_lastLockStatus;
   bool m_shutdown = false;
-
-#ifdef _WIN32
-  bool m_presetsSet = false;
-#endif
 
   // some projectm globals
   const static int maxSamples=512;
