@@ -43,13 +43,11 @@ d4rk@xbmc.org
 #pragma once
 
 #include <kodi/addon-instance/Visualization.h>
+#include <libprojectM/projectM.hpp>
 #include <mutex>
 
-#include <libprojectM/projectM.hpp>
-
-class ATTR_DLL_LOCAL CVisualizationProjectM
-  : public kodi::addon::CAddonBase,
-    public kodi::addon::CInstanceVisualization
+class ATTR_DLL_LOCAL CVisualizationProjectM : public kodi::addon::CAddonBase,
+                                              public kodi::addon::CInstanceVisualization
 {
 public:
   CVisualizationProjectM();
@@ -66,7 +64,8 @@ public:
   int GetActivePreset() override;
   bool RandomPreset() override;
   bool IsLocked() override;
-  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue) override;
+  ADDON_STATUS SetSetting(const std::string& settingName,
+                          const kodi::addon::CSettingValue& settingValue) override;
 
 private:
   bool InitProjectM();
@@ -86,9 +85,8 @@ private:
   bool m_shutdown = false;
 
   // some projectm globals
-  const static int maxSamples=512;
-  const static int texsize=512;
-  const static int gx=40,gy=30;
-  const static int fps=100;
+  const static int maxSamples = 512;
+  const static int texsize = 512;
+  const static int gx = 40, gy = 30;
+  const static int fps = 100;
 };
-

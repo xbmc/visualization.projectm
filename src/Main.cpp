@@ -45,9 +45,7 @@ d4rk@xbmc.org
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by Kodi. Do any setup here.
 //-----------------------------------------------------------------------------
-CVisualizationProjectM::CVisualizationProjectM()
-  : m_projectM(nullptr),
-    m_UserPackFolder(false)
+CVisualizationProjectM::CVisualizationProjectM() : m_projectM(nullptr), m_UserPackFolder(false)
 {
   m_configPM.meshX = gx;
   m_configPM.meshY = gy;
@@ -118,11 +116,11 @@ void CVisualizationProjectM::Render()
   {
     m_projectM->renderFrame();
 #ifdef DEBUG
-      unsigned preset;
-      m_projectM->selectedPresetIndex(preset);
-      if (m_lastLoggedPresetIdx != preset)
-        CLog::Log(ADDON_LOG_DEBUG,"PROJECTM - Changed preset to: %s",g_presets[preset]);
-      m_lastLoggedPresetIdx = preset;
+    unsigned preset;
+    m_projectM->selectedPresetIndex(preset);
+    if (m_lastLoggedPresetIdx != preset)
+      CLog::Log(ADDON_LOG_DEBUG, "PROJECTM - Changed preset to: %s", g_presets[preset]);
+    m_lastLoggedPresetIdx = preset;
 #endif
   }
 }
@@ -137,11 +135,13 @@ bool CVisualizationProjectM::LoadPreset(int select)
 bool CVisualizationProjectM::PrevPreset()
 {
   std::unique_lock<std::mutex> lock(m_pmMutex);
-//  switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
+  //  switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
   if (!m_projectM->isShuffleEnabled())
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p,
+                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
   else
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r,
+                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
 
   return true;
 }
@@ -149,11 +149,13 @@ bool CVisualizationProjectM::PrevPreset()
 bool CVisualizationProjectM::NextPreset()
 {
   std::unique_lock<std::mutex> lock(m_pmMutex);
-//  switchPreset(ALPHA_NEXT, SOFT_CUT);
+  //  switchPreset(ALPHA_NEXT, SOFT_CUT);
   if (!m_projectM->isShuffleEnabled())
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n,
+                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
   else
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r, PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r,
+                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
   return true;
 }
 
@@ -161,7 +163,7 @@ bool CVisualizationProjectM::RandomPreset()
 {
   std::unique_lock<std::mutex> lock(m_pmMutex);
   m_projectM->setShuffleEnabled(m_configPM.shuffleEnabled);
-  return true; 
+  return true;
 }
 
 bool CVisualizationProjectM::LockPreset(bool lockUnlock)
@@ -171,7 +173,7 @@ bool CVisualizationProjectM::LockPreset(bool lockUnlock)
   unsigned preset;
   m_projectM->selectedPresetIndex(preset);
   m_projectM->selectPreset(preset);
-  return true; 
+  return true;
 }
 
 //-- GetPresets ---------------------------------------------------------------
@@ -196,7 +198,7 @@ int CVisualizationProjectM::GetActivePreset()
 {
   unsigned preset;
   std::unique_lock<std::mutex> lock(m_pmMutex);
-  if(m_projectM && m_projectM->selectedPresetIndex(preset))
+  if (m_projectM && m_projectM->selectedPresetIndex(preset))
     return preset;
 
   return 0;
@@ -208,7 +210,7 @@ int CVisualizationProjectM::GetActivePreset()
 bool CVisualizationProjectM::IsLocked()
 {
   std::unique_lock<std::mutex> lock(m_pmMutex);
-  if(m_projectM)
+  if (m_projectM)
     return m_projectM->isPresetLocked();
   else
     return false;
@@ -217,7 +219,8 @@ bool CVisualizationProjectM::IsLocked()
 //-- UpdateSetting ------------------------------------------------------------
 // Handle setting change request from Kodi
 //-----------------------------------------------------------------------------
-ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue)
+ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
+                                                const kodi::addon::CSettingValue& settingValue)
 {
   if (settingName.empty() || settingValue.empty())
     return ADDON_STATUS_UNKNOWN;
@@ -247,9 +250,10 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName, 
     else if (settingName == "beat_sens")
       m_configPM.beatSensitivity = settingValue.GetInt() * 2;
   }
-  if (settingName == "beat_sens" && !m_shutdown) // becomes changed in future by a additional value on function
+  if (settingName == "beat_sens" &&
+      !m_shutdown) // becomes changed in future by a additional value on function
   {
-    if (!InitProjectM())    //The last setting value is already set so we (re)initalize
+    if (!InitProjectM()) //The last setting value is already set so we (re)initalize
       return ADDON_STATUS_UNKNOWN;
   }
   return ADDON_STATUS_OK;
@@ -262,7 +266,8 @@ bool CVisualizationProjectM::InitProjectM()
   try
   {
     m_projectM = new projectM(m_configPM);
-    if (m_configPM.presetURL == m_lastPresetDir)  //If it is not the first run AND if this is the same preset pack as last time
+    if (m_configPM.presetURL ==
+        m_lastPresetDir) //If it is not the first run AND if this is the same preset pack as last time
     {
       m_projectM->setPresetLock(m_lastLockStatus);
       m_projectM->selectPreset(m_lastPresetIdx);
@@ -292,32 +297,38 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 
     case 0:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_bltc201");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_bltc201");
       break;
 
     case 1:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop");
       break;
 
     case 2:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_104");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_104");
       break;
 
     case 3:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_200");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_200");
       break;
 
     case 4:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_mischa_collection");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_mischa_collection");
       break;
 
     case 5:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_projectM");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_projectM");
 
     case 6:
       m_UserPackFolder = false;
@@ -326,7 +337,8 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 
     case 7:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_tryptonaut");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_tryptonaut");
       break;
 
     case 8:
@@ -341,11 +353,14 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 
     case 10:
       m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_eyetune");
+      m_configPM.presetURL =
+          kodi::addon::GetAddonPath("resources/projectM/presets/presets_eyetune");
       break;
 
     default:
-      kodi::Log(ADDON_LOG_FATAL, "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)", __func__, pvalue);
+      kodi::Log(ADDON_LOG_FATAL,
+                "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)",
+                __func__, pvalue);
       break;
   }
 }
@@ -355,7 +370,7 @@ void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
   if (m_UserPackFolder && !pvalue.empty())
   {
     if (pvalue.back() == '/')
-      pvalue.erase(pvalue.length()-1,1);  //Remove "/" from the end
+      pvalue.erase(pvalue.length() - 1, 1); //Remove "/" from the end
     m_configPM.presetURL = pvalue;
   }
 }
