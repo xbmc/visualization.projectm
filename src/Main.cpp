@@ -58,9 +58,6 @@ CVisualizationProjectM::CVisualizationProjectM() : m_projectM(nullptr), m_UserPa
   m_configPM.menuFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
   m_configPM.datadir = kodi::addon::GetAddonPath("resources/projectM");
   m_lastPresetIdx = kodi::addon::GetSettingInt("last_preset_idx");
-#ifdef DEBUG
-  m_lastLoggedPresetIdx = m_lastPresetIdx;
-#endif
 
   m_configPM.textureSize = kodi::addon::GetSettingInt("quality");
   m_configPM.shuffleEnabled = kodi::addon::GetSettingBoolean("shuffle");
@@ -113,16 +110,7 @@ void CVisualizationProjectM::Render()
 {
   std::unique_lock<std::mutex> lock(m_pmMutex);
   if (m_projectM)
-  {
     m_projectM->renderFrame();
-#ifdef DEBUG
-    unsigned preset;
-    m_projectM->selectedPresetIndex(preset);
-    if (m_lastLoggedPresetIdx != preset)
-      CLog::Log(ADDON_LOG_DEBUG, "PROJECTM - Changed preset to: %s", g_presets[preset]);
-    m_lastLoggedPresetIdx = preset;
-#endif
-  }
 }
 
 bool CVisualizationProjectM::LoadPreset(int select)
