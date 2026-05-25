@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.18)
 project(visualization.projectm)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
@@ -27,7 +27,6 @@ include_directories(${includes}
 
 set(PM_SOURCES src/Main.cpp)
 set(PM_HEADERS src/Main.h)
-set(PM_CUSTOM_DATA ${PROJECTM_PKGDATADIR})
 
 build_addon(visualization.projectm PM DEPLIBS)
 

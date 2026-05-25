@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2007-2025 Team Kodi (https://kodi.tv)
+ *  Copyright (C) 2007-2026 Team Kodi (https://kodi.tv)
  *
  *  SPDX-License-Identifier: GPL-2.0-or-later
  *  See LICENSE.md for more information.
@@ -43,19 +43,17 @@ d4rk@xbmc.org
 #pragma once
 
 #include <kodi/addon-instance/Visualization.h>
+#include <libprojectM/projectM.hpp>
 #include <mutex>
 
-#include <libprojectM/projectM.hpp>
-
-class ATTR_DLL_LOCAL CVisualizationProjectM
-  : public kodi::addon::CAddonBase,
-    public kodi::addon::CInstanceVisualization
+class ATTR_DLL_LOCAL CVisualizationProjectM : public kodi::addon::CAddonBase,
+                                              public kodi::addon::CInstanceVisualization
 {
 public:
   CVisualizationProjectM();
   ~CVisualizationProjectM() override;
 
-  bool Start(int channels, int samplesPerSec, int bitsPerSample, const std::string& songName) override;
+  bool Init() override;
   void Render() override;
   void AudioData(const float* audioData, size_t audioDataLength) override;
   bool GetPresets(std::vector<std::string>& presets) override;
@@ -66,7 +64,8 @@ public:
   int GetActivePreset() override;
   bool RandomPreset() override;
   bool IsLocked() override;
-  ADDON_STATUS SetSetting(const std::string& settingName, const kodi::addon::CSettingValue& settingValue) override;
+  ADDON_STATUS SetSetting(const std::string& settingName,
+                          const kodi::addon::CSettingValue& settingValue) override;
 
 private:
   bool InitProjectM();
@@ -79,20 +78,12 @@ private:
   bool m_UserPackFolder;
   std::string m_lastPresetDir;
   int m_lastPresetIdx;
-#ifdef DEBUG
-  unsigned int m_lastLoggedPresetIdx;
-#endif
   bool m_lastLockStatus;
   bool m_shutdown = false;
 
-#ifdef _WIN32
-  bool m_presetsSet = false;
-#endif
-
   // some projectm globals
-  const static int maxSamples=512;
-  const static int texsize=512;
-  const static int gx=40,gy=30;
-  const static int fps=100;
+  const static int maxSamples = 512;
+  const static int texsize = 512;
+  const static int gx = 40, gy = 30;
+  const static int fps = 100;
 };
-

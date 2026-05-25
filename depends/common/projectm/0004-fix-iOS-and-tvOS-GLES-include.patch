@@ -1,0 +1,45 @@
+From 3309fc80e5e3dd13e53a714f41ea154234c000e1 Mon Sep 17 00:00:00 2001
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sun, 24 May 2026 02:08:40 +0200
+Subject: [PATCH] fix iOS and tvOS GLES include
+
+---
+ src/libprojectM/projectM-opengl.h | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/src/libprojectM/projectM-opengl.h b/src/libprojectM/projectM-opengl.h
+index 001008c..9cb6d94 100644
+--- a/src/libprojectM/projectM-opengl.h
++++ b/src/libprojectM/projectM-opengl.h
+@@ -18,8 +18,13 @@
+ #define DUMP_SHADERS_ON_ERROR       0
+ 
+ #ifdef __APPLE__
+-# include <OpenGL/gl3.h>
+-# include <OpenGL/gl3ext.h>
++# ifndef USE_GLES
++#  include <OpenGL/gl3.h>
++#  include <OpenGL/gl3ext.h>
++# else
++#  include <OpenGLES/ES3/gl.h>
++#  include <OpenGLES/ES3/glext.h>
++# endif
+ #elif defined(EYETUNE_WINRT)
+ #define GL_GLEXT_PROTOTYPES
+ #define GLM_FORCE_CXX03
+@@ -32,8 +37,12 @@
+ #elif defined(_WIN32)
+ #define GLM_FORCE_CXX03
+ # include <windows.h>
++#if defined(HAS_ANGLE)
++#include <angle_gl.h>
++#else
+ #include "glew.h"
+ #include "wglew.h"
++#endif
+ #else /* linux/unix/other */
+ # ifdef USE_GLES
+ #  include <GLES3/gl3.h>
+-- 
+2.53.0
+
