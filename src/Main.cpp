@@ -42,6 +42,36 @@ d4rk@xbmc.org
 
 #include "Main.h"
 
+#include <unordered_map>
+
+namespace
+{
+
+struct preset_info
+{
+  std::string path;
+  uint32_t labelId;
+};
+
+constexpr int DEFAULT_PRESET = 5;
+
+// The preset packs that are installed with the add-on.
+// The key is the value of the "preset_pack" setting in settings.xml
+const std::unordered_map<int, preset_info> installed_presets = {
+    {0, {"resources/projectM/presets/presets_bltc201", 30020}},
+    {1, {"resources/projectM/presets/presets_milkdrop", 30021}},
+    {2, {"resources/projectM/presets/presets_milkdrop_104", 30022}},
+    {3, {"resources/projectM/presets/presets_milkdrop_200", 30023}},
+    {4, {"resources/projectM/presets/presets_mischa_collection", 30024}},
+    {5, {"resources/projectM/presets/presets_projectM", 30025}},
+    {6, {"resources/projectM/presets/presets_stock", 30026}},
+    {7, {"resources/projectM/presets/presets_tryptonaut", 30027}},
+    {8, {"resources/projectM/presets/presets_yin", 30028}},
+    {9, {"resources/projectM/presets/tests", 30029}},
+    {10, {"resources/projectM/presets/presets_eyetune", 30030}}};
+
+} // namespace
+
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by Kodi. Do any setup here.
 //-----------------------------------------------------------------------------
@@ -277,80 +307,23 @@ bool CVisualizationProjectM::InitProjectM()
 
 void CVisualizationProjectM::ChoosePresetPack(int pvalue)
 {
-  switch (pvalue)
+  if (pvalue == -1)
   {
-    case -1:
-      m_UserPackFolder = true;
-      break;
-
-    case 0:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_bltc201");
-      break;
-
-    case 1:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop");
-      break;
-
-    case 2:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_104");
-      break;
-
-    case 3:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_milkdrop_200");
-      break;
-
-    case 4:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_mischa_collection");
-      break;
-
-    case 5:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_projectM");
-
-    case 6:
-      m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_stock");
-      break;
-
-    case 7:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_tryptonaut");
-      break;
-
-    case 8:
-      m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/presets_yin");
-      break;
-
-    case 9:
-      m_UserPackFolder = false;
-      m_configPM.presetURL = kodi::addon::GetAddonPath("resources/projectM/presets/tests");
-      break;
-
-    case 10:
-      m_UserPackFolder = false;
-      m_configPM.presetURL =
-          kodi::addon::GetAddonPath("resources/projectM/presets/presets_eyetune");
-      break;
-
-    default:
-      kodi::Log(ADDON_LOG_FATAL,
-                "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)",
-                __func__, pvalue);
-      break;
+    m_UserPackFolder = true;
+    return;
   }
+
+  const auto entry = installed_presets.find(pvalue);
+  if (entry == installed_presets.end())
+  {
+    kodi::Log(ADDON_LOG_FATAL,
+              "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)",
+              __func__, pvalue);
+    return;
+  }
+
+  m_UserPackFolder = false;
+  m_configPM.presetURL = kodi::addon::GetAddonPath(entry->second.path);
 }
 
 void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
