@@ -74,7 +74,7 @@ private:
 
   projectM* m_projectM;
   projectM::Settings m_configPM;
-  std::mutex m_pmMutex;
+  std::recursive_mutex m_pmMutex;
   bool m_UserPackFolder;
   std::string m_lastPresetDir;
   int m_lastPresetIdx;

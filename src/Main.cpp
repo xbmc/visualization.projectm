@@ -98,7 +98,7 @@ bool CVisualizationProjectM::Init()
 //-----------------------------------------------------------------------------
 void CVisualizationProjectM::AudioData(const float* pAudioData, size_t iAudioDataLength)
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
     m_projectM->pcm()->addPCMfloat_2ch(pAudioData, iAudioDataLength);
 }
@@ -108,21 +108,21 @@ void CVisualizationProjectM::AudioData(const float* pAudioData, size_t iAudioDat
 //-----------------------------------------------------------------------------
 void CVisualizationProjectM::Render()
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
     m_projectM->renderFrame();
 }
 
 bool CVisualizationProjectM::LoadPreset(int select)
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   m_projectM->selectPreset(select);
   return true;
 }
 
 bool CVisualizationProjectM::PrevPreset()
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   //  switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
   if (!m_projectM->isShuffleEnabled())
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p,
@@ -136,7 +136,7 @@ bool CVisualizationProjectM::PrevPreset()
 
 bool CVisualizationProjectM::NextPreset()
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   //  switchPreset(ALPHA_NEXT, SOFT_CUT);
   if (!m_projectM->isShuffleEnabled())
     m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n,
@@ -149,14 +149,14 @@ bool CVisualizationProjectM::NextPreset()
 
 bool CVisualizationProjectM::RandomPreset()
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   m_projectM->setShuffleEnabled(m_configPM.shuffleEnabled);
   return true;
 }
 
 bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   m_projectM->setPresetLock(lockUnlock);
   unsigned preset;
   m_projectM->selectedPresetIndex(preset);
@@ -169,7 +169,7 @@ bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 //-----------------------------------------------------------------------------
 bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   int numPresets = m_projectM ? m_projectM->getPlaylistSize() : 0;
   if (numPresets > 0)
   {
@@ -185,7 +185,7 @@ bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 int CVisualizationProjectM::GetActivePreset()
 {
   unsigned preset;
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM && m_projectM->selectedPresetIndex(preset))
     return preset;
 
@@ -197,7 +197,7 @@ int CVisualizationProjectM::GetActivePreset()
 //-----------------------------------------------------------------------------
 bool CVisualizationProjectM::IsLocked()
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
     return m_projectM->isPresetLocked();
   else
@@ -214,7 +214,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
     return ADDON_STATUS_UNKNOWN;
 
   {
-    std::unique_lock<std::mutex> lock(m_pmMutex);
+    std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
 
     // It is now time to set the settings got from xmbc
     if (settingName == "quality")
@@ -249,7 +249,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
 
 bool CVisualizationProjectM::InitProjectM()
 {
-  std::unique_lock<std::mutex> lock(m_pmMutex);
+  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   delete m_projectM; //We are re-initializing the engine
   try
   {
