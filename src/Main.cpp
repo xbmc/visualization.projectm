@@ -77,6 +77,18 @@ const std::unordered_map<int, preset_info> installed_presets = {
 //-----------------------------------------------------------------------------
 CVisualizationProjectM::CVisualizationProjectM()
 {
+  // Load all available settings from add-on.
+  m_settings.preset_pack = kodi::addon::GetSettingInt("preset_pack");
+  m_settings.user_preset_folder = kodi::addon::GetSettingString("user_preset_folder");
+  m_settings.last_preset_folder = kodi::addon::GetSettingString("last_preset_folder");
+  m_settings.last_preset_idx = kodi::addon::GetSettingInt("last_preset_idx");
+  m_settings.last_locked_status = kodi::addon::GetSettingBoolean("last_locked_status");
+  m_settings.shuffle = kodi::addon::GetSettingBoolean("shuffle");
+  m_settings.quality = kodi::addon::GetSettingInt("quality");
+  m_settings.smooth_duration = static_cast<double>(kodi::addon::GetSettingFloat("smooth_duration"));
+  m_settings.preset_duration = static_cast<double>(kodi::addon::GetSettingFloat("preset_duration"));
+  m_settings.beat_sens = kodi::addon::GetSettingFloat("beat_sens");
+
   m_configPM.meshX = gx;
   m_configPM.meshY = gy;
   m_configPM.fps = fps;
@@ -87,20 +99,14 @@ CVisualizationProjectM::CVisualizationProjectM()
   m_configPM.titleFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/Vera.ttf");
   m_configPM.menuFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
   m_configPM.datadir = kodi::addon::GetAddonPath("resources/projectM");
-  m_lastPresetIdx = kodi::addon::GetSettingInt("last_preset_idx");
+  m_configPM.textureSize = m_settings.quality;
+  m_configPM.shuffleEnabled = m_settings.shuffle;
+  m_configPM.smoothPresetDuration = static_cast<int>(m_settings.smooth_duration);
+  m_configPM.presetDuration = static_cast<int>(m_settings.preset_duration);
+  m_configPM.beatSensitivity = m_settings.beat_sens;
 
-  m_configPM.textureSize = kodi::addon::GetSettingInt("quality");
-  m_configPM.shuffleEnabled = kodi::addon::GetSettingBoolean("shuffle");
-
-  m_lastLockStatus = kodi::addon::GetSettingBoolean("last_locked_status");
-  m_lastPresetDir = kodi::addon::GetSettingString("last_preset_folder");
-  m_configPM.smoothPresetDuration =
-      static_cast<int>(kodi::addon::GetSettingFloat("smooth_duration"));
-  m_configPM.presetDuration = static_cast<int>(kodi::addon::GetSettingFloat("preset_duration"));
-
-  ChoosePresetPack(kodi::addon::GetSettingInt("preset_pack"));
-  ChooseUserPresetFolder(kodi::addon::GetSettingString("user_preset_folder"));
-  m_configPM.beatSensitivity = kodi::addon::GetSettingFloat("beat_sens");
+  ChoosePresetPack(m_settings.preset_pack);
+  ChooseUserPresetFolder(m_settings.user_preset_folder);
 }
 
 CVisualizationProjectM::~CVisualizationProjectM()
@@ -242,39 +248,153 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
                                                 const kodi::addon::CSettingValue& settingValue)
 {
   if (settingName.empty() || settingValue.empty())
+  {
     return ADDON_STATUS_UNKNOWN;
-
-  {
-    std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-
-    // It is now time to set the settings got from xmbc
-    if (settingName == "quality")
-      m_configPM.textureSize = settingValue.GetInt();
-    else if (settingName == "shuffle")
-      m_configPM.shuffleEnabled = settingValue.GetBoolean();
-    else if (settingName == "last_preset_idx")
-      m_lastPresetIdx = settingValue.GetInt();
-    else if (settingName == "last_locked_status")
-      m_lastLockStatus = settingValue.GetBoolean();
-    else if (settingName == "last_preset_folder")
-      m_lastPresetDir = settingValue.GetString();
-    else if (settingName == "smooth_duration")
-      m_configPM.smoothPresetDuration = static_cast<int>(settingValue.GetFloat());
-    else if (settingName == "preset_duration")
-      m_configPM.presetDuration = static_cast<int>(settingValue.GetFloat());
-    else if (settingName == "preset_pack")
-      ChoosePresetPack(settingValue.GetInt());
-    else if (settingName == "user_preset_folder")
-      ChooseUserPresetFolder(settingValue.GetString());
-    else if (settingName == "beat_sens")
-      m_configPM.beatSensitivity = settingValue.GetFloat();
   }
-  if (settingName == "beat_sens" &&
-      !m_shutdown) // becomes changed in future by a additional value on function
+
+  // Do only settings works if it is in process. In shutdown time makes no sense
+  // to reinitialize ProjectM again.
+  // This function becomes called on destruct as there are becomes some setting
+  // values stored in add-ons settings.xml.
+  if (!m_shutdown)
   {
-    if (!InitProjectM()) //The last setting value is already set so we (re)initalize
-      return ADDON_STATUS_UNKNOWN;
+    {
+      std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
+
+      if (!m_projectM)
+      {
+        return ADDON_STATUS_UNKNOWN;
+      }
+
+      // It is now time to set the settings got from xmbc
+      if (settingName == "preset_pack")
+      {
+        const int newValue = settingValue.GetInt();
+        if (m_settings.preset_pack != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.preset_pack = newValue;
+          ChoosePresetPack(newValue);
+        }
+      }
+      else if (settingName == "user_preset_folder")
+      {
+        const std::string newValue = settingValue.GetString();
+        if (m_settings.user_preset_folder != newValue && m_settings.preset_pack == -1)
+        {
+          m_settingChanged = true;
+
+          m_settings.user_preset_folder = newValue;
+          ChooseUserPresetFolder(newValue);
+        }
+      }
+      else if (settingName == "last_preset_folder")
+      {
+        const std::string newValue = settingValue.GetString();
+        if (m_settings.last_preset_folder != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.last_preset_folder = newValue;
+        }
+      }
+      else if (settingName == "last_preset_idx")
+      {
+        const int newValue = settingValue.GetInt();
+        if (m_settings.last_preset_idx != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.last_preset_idx = newValue;
+        }
+      }
+      else if (settingName == "last_locked_status")
+      {
+        const bool newValue = settingValue.GetBoolean();
+        if (m_settings.last_locked_status != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.last_locked_status = newValue;
+        }
+      }
+      else if (settingName == "shuffle")
+      {
+        const bool newValue = settingValue.GetBoolean();
+        if (m_settings.shuffle != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.shuffle = newValue;
+          m_configPM.shuffleEnabled = m_settings.shuffle;
+        }
+      }
+      else if (settingName == "quality")
+      {
+        const int newValue = settingValue.GetInt();
+        if (m_settings.last_preset_idx != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.quality = newValue;
+          m_configPM.textureSize = m_settings.quality;
+        }
+      }
+      else if (settingName == "smooth_duration")
+      {
+        const double newValue = static_cast<double>(settingValue.GetFloat());
+        if (m_settings.smooth_duration != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.smooth_duration = newValue;
+          m_configPM.smoothPresetDuration = static_cast<int>(m_settings.smooth_duration);
+        }
+      }
+      else if (settingName == "preset_duration")
+      {
+        const double newValue = static_cast<double>(settingValue.GetFloat());
+        if (m_settings.preset_duration != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.preset_duration = newValue;
+          m_configPM.presetDuration = static_cast<int>(m_settings.preset_duration);
+        }
+      }
+      else if (settingName == "beat_sens")
+      {
+        const float newValue = settingValue.GetFloat();
+        if (m_settings.beat_sens != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.beat_sens = newValue;
+          m_configPM.beatSensitivity = m_settings.beat_sens;
+        }
+      }
+    }
+
+    // becomes changed in future by a additional value on function, currently we
+    // use the last given value from settings.xml
+    //
+    // Check further about m_settingChanged, if something was changed, makes no
+    // sense to restart if nothing new.
+    if (settingName == "beat_sens" && m_settingChanged)
+    {
+      m_settingChanged = false;
+
+      // The last setting value is already set so we (re)initalize
+      if (!InitProjectM())
+      {
+        kodi::Log(ADDON_LOG_FATAL,
+                  "Failed to reinitialize after settings change, screen rendering no more works.");
+        return ADDON_STATUS_UNKNOWN;
+      }
+    }
   }
+
   return ADDON_STATUS_OK;
 }
 
@@ -286,10 +406,11 @@ bool CVisualizationProjectM::InitProjectM()
   {
     m_projectM = new projectM(m_configPM);
     if (m_configPM.presetURL ==
-        m_lastPresetDir) //If it is not the first run AND if this is the same preset pack as last time
+        m_settings
+            .last_preset_folder) //If it is not the first run AND if this is the same preset pack as last time
     {
-      m_projectM->setPresetLock(m_lastLockStatus);
-      m_projectM->selectPreset(m_lastPresetIdx);
+      m_projectM->setPresetLock(m_settings.last_locked_status);
+      m_projectM->selectPreset(m_settings.last_preset_idx);
     }
     else
     {
@@ -311,6 +432,7 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
   if (pvalue == -1)
   {
     m_UserPackFolder = true;
+    m_settings.preset_pack = -1;
     return;
   }
 
@@ -324,7 +446,9 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
   }
 
   m_UserPackFolder = false;
-  m_configPM.presetURL = kodi::addon::GetAddonPath(entry->second.path);
+  m_settings.preset_pack = pvalue;
+  m_settings.last_preset_folder = kodi::addon::GetAddonPath(entry->second.path);
+  m_configPM.presetURL = m_settings.last_preset_folder
 }
 
 void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
@@ -333,7 +457,8 @@ void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
   {
     if (pvalue.back() == '/')
       pvalue.erase(pvalue.length() - 1, 1); //Remove "/" from the end
-    m_configPM.presetURL = pvalue;
+    m_settings.last_preset_folder = pvalue;
+    m_configPM.presetURL = m_settings.last_preset_folder;
   }
 }
 

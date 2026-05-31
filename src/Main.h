@@ -42,6 +42,7 @@ d4rk@xbmc.org
 
 #pragma once
 
+#include <atomic>
 #include <kodi/addon-instance/Visualization.h>
 #include <libprojectM/projectM.hpp>
 #include <mutex>
@@ -72,14 +73,29 @@ private:
   void ChoosePresetPack(int pvalue);
   void ChooseUserPresetFolder(std::string pvalue);
 
+  bool m_settingChanged{true};
   bool m_UserPackFolder{false};
+
+  // Stored values where we get from settings.xml
+  // The name and order is identical to settings.xml.
+  // NOTE: Value last_preset_folder can be it a bit confusing, as it is in process the currently used preset folder.
+  struct
+  {
+    int preset_pack{-1};
+    std::string user_preset_folder;
+    std::string last_preset_folder;
+    std::atomic_int last_preset_idx{};
+    bool last_locked_status{false};
+    bool shuffle{false};
+    int quality{512};
+    double smooth_duration{0};
+    double preset_duration{0};
+    float beat_sens{0};
+  } m_settings;
 
   projectM* m_projectM{nullptr};
   projectM::Settings m_configPM;
   std::recursive_mutex m_pmMutex;
-  std::string m_lastPresetDir;
-  int m_lastPresetIdx;
-  bool m_lastLockStatus;
   bool m_shutdown = false;
 
   // some projectm globals
