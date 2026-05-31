@@ -64,12 +64,12 @@ CVisualizationProjectM::CVisualizationProjectM() : m_projectM(nullptr), m_UserPa
 
   m_lastLockStatus = kodi::addon::GetSettingBoolean("last_locked_status");
   m_lastPresetDir = kodi::addon::GetSettingString("last_preset_folder");
-  m_configPM.smoothPresetDuration = kodi::addon::GetSettingInt("smooth_duration");
-  m_configPM.presetDuration = kodi::addon::GetSettingInt("preset_duration");
+  m_configPM.smoothPresetDuration = static_cast<int>(kodi::addon::GetSettingFloat("smooth_duration"));
+  m_configPM.presetDuration = static_cast<int>(kodi::addon::GetSettingFloat("preset_duration"));
 
   ChoosePresetPack(kodi::addon::GetSettingInt("preset_pack"));
   ChooseUserPresetFolder(kodi::addon::GetSettingString("user_preset_folder"));
-  m_configPM.beatSensitivity = kodi::addon::GetSettingInt("beat_sens") * 2;
+  m_configPM.beatSensitivity = kodi::addon::GetSettingFloat("beat_sens");
 }
 
 CVisualizationProjectM::~CVisualizationProjectM()
@@ -228,15 +228,15 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
     else if (settingName == "last_preset_folder")
       m_lastPresetDir = settingValue.GetString();
     else if (settingName == "smooth_duration")
-      m_configPM.smoothPresetDuration = (settingValue.GetInt() * 5 + 5);
+      m_configPM.smoothPresetDuration = static_cast<int>(settingValue.GetFloat());
     else if (settingName == "preset_duration")
-      m_configPM.presetDuration = (settingValue.GetInt() * 5 + 5);
+      m_configPM.presetDuration = static_cast<int>(settingValue.GetFloat());
     else if (settingName == "preset_pack")
       ChoosePresetPack(settingValue.GetInt());
     else if (settingName == "user_preset_folder")
       ChooseUserPresetFolder(settingValue.GetString());
     else if (settingName == "beat_sens")
-      m_configPM.beatSensitivity = settingValue.GetInt() * 2;
+      m_configPM.beatSensitivity = settingValue.GetFloat();
   }
   if (settingName == "beat_sens" &&
       !m_shutdown) // becomes changed in future by a additional value on function
