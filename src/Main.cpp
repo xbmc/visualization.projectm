@@ -72,10 +72,27 @@ const std::unordered_map<int, preset_info> installed_presets = {
 
 } // namespace
 
-//-- Create -------------------------------------------------------------------
+CVisualizationProjectM::~CVisualizationProjectM()
+{
+  unsigned int lastindex = 0;
+  m_projectM->selectedPresetIndex(lastindex);
+  m_shutdown = true;
+  kodi::addon::SetSettingInt("last_preset_idx", lastindex);
+  kodi::addon::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
+  kodi::addon::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
+
+  if (m_projectM)
+  {
+    delete m_projectM;
+    m_projectM = nullptr;
+  }
+}
+
+//-- Init -------------------------------------------------------------------
 // Called once when the visualisation is created by Kodi. Do any setup here.
 //-----------------------------------------------------------------------------
-CVisualizationProjectM::CVisualizationProjectM()
+
+bool CVisualizationProjectM::Init()
 {
   // Load all available settings from add-on.
   m_settings.preset_pack = kodi::addon::GetSettingInt("preset_pack");
@@ -107,27 +124,15 @@ CVisualizationProjectM::CVisualizationProjectM()
 
   ChoosePresetPack(m_settings.preset_pack);
   ChooseUserPresetFolder(m_settings.user_preset_folder);
-}
 
-CVisualizationProjectM::~CVisualizationProjectM()
-{
-  unsigned int lastindex = 0;
-  m_projectM->selectedPresetIndex(lastindex);
-  m_shutdown = true;
-  kodi::addon::SetSettingInt("last_preset_idx", lastindex);
-  kodi::addon::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
-  kodi::addon::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
-
-  if (m_projectM)
+  if (!InitProjectM())
   {
-    delete m_projectM;
-    m_projectM = nullptr;
+    kodi::Log(ADDON_LOG_FATAL, "Failed to initialize projectM - addon will not function");
+    // Object is in invalid state - all subsequent method calls must check m_projectM/m_playlist
+    return false;
   }
-}
 
-bool CVisualizationProjectM::Init()
-{
-  return InitProjectM();
+  return true;
 }
 
 //-- Audiodata ----------------------------------------------------------------
@@ -448,7 +453,7 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
   m_UserPackFolder = false;
   m_settings.preset_pack = pvalue;
   m_settings.last_preset_folder = kodi::addon::GetAddonPath(entry->second.path);
-  m_configPM.presetURL = m_settings.last_preset_folder
+  m_configPM.presetURL = m_settings.last_preset_folder;
 }
 
 void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)

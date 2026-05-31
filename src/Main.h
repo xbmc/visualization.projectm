@@ -51,7 +51,7 @@ class ATTR_DLL_LOCAL CVisualizationProjectM : public kodi::addon::CAddonBase,
                                               public kodi::addon::CInstanceVisualization
 {
 public:
-  CVisualizationProjectM();
+  CVisualizationProjectM() = default;
   ~CVisualizationProjectM() override;
 
   bool Init() override;
