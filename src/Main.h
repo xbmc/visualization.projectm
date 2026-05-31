@@ -96,7 +96,7 @@ private:
   projectM* m_projectM{nullptr};
   projectM::Settings m_configPM;
   std::recursive_mutex m_pmMutex;
-  bool m_shutdown = false;
+  std::atomic_bool m_shutdown{false};
 
   // some projectm globals
   const static int maxSamples = 512;
