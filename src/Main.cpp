@@ -75,7 +75,7 @@ const std::unordered_map<int, preset_info> installed_presets = {
 //-- Create -------------------------------------------------------------------
 // Called once when the visualisation is created by Kodi. Do any setup here.
 //-----------------------------------------------------------------------------
-CVisualizationProjectM::CVisualizationProjectM() : m_projectM(nullptr), m_UserPackFolder(false)
+CVisualizationProjectM::CVisualizationProjectM()
 {
   m_configPM.meshX = gx;
   m_configPM.meshY = gy;
@@ -94,7 +94,8 @@ CVisualizationProjectM::CVisualizationProjectM() : m_projectM(nullptr), m_UserPa
 
   m_lastLockStatus = kodi::addon::GetSettingBoolean("last_locked_status");
   m_lastPresetDir = kodi::addon::GetSettingString("last_preset_folder");
-  m_configPM.smoothPresetDuration = static_cast<int>(kodi::addon::GetSettingFloat("smooth_duration"));
+  m_configPM.smoothPresetDuration =
+      static_cast<int>(kodi::addon::GetSettingFloat("smooth_duration"));
   m_configPM.presetDuration = static_cast<int>(kodi::addon::GetSettingFloat("preset_duration"));
 
   ChoosePresetPack(kodi::addon::GetSettingInt("preset_pack"));

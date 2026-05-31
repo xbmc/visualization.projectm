@@ -72,10 +72,11 @@ private:
   void ChoosePresetPack(int pvalue);
   void ChooseUserPresetFolder(std::string pvalue);
 
-  projectM* m_projectM;
+  bool m_UserPackFolder{false};
+
+  projectM* m_projectM{nullptr};
   projectM::Settings m_configPM;
   std::recursive_mutex m_pmMutex;
-  bool m_UserPackFolder;
   std::string m_lastPresetDir;
   int m_lastPresetIdx;
   bool m_lastLockStatus;
