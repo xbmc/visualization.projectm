@@ -44,8 +44,9 @@ d4rk@xbmc.org
 
 #include <atomic>
 #include <kodi/addon-instance/Visualization.h>
-#include <libprojectM/projectM.hpp>
 #include <mutex>
+#include <projectM-4/playlist.h>
+#include <projectM-4/projectM.h>
 
 class ATTR_DLL_LOCAL CVisualizationProjectM : public kodi::addon::CAddonBase,
                                               public kodi::addon::CInstanceVisualization
@@ -72,9 +73,13 @@ private:
   bool InitProjectM();
   void ChoosePresetPack(int pvalue);
   void ChooseUserPresetFolder(std::string pvalue);
+  std::string GetBasename(std::string fullPath);
+  void ReloadPlaylist();
+  static void PresetSwitchedEvent(bool isHardCut, unsigned int index, void* context);
 
   bool m_settingChanged{true};
   bool m_UserPackFolder{false};
+  std::string m_texturePath;
 
   // Stored values where we get from settings.xml
   // The name and order is identical to settings.xml.
@@ -87,20 +92,18 @@ private:
     std::atomic_int last_preset_idx{};
     bool last_locked_status{false};
     bool shuffle{false};
-    int quality{512};
     double smooth_duration{0};
     double preset_duration{0};
     float beat_sens{0};
   } m_settings;
 
-  projectM* m_projectM{nullptr};
-  projectM::Settings m_configPM;
+  projectm_handle m_projectM{nullptr};
+  projectm_playlist_handle m_playlist{nullptr};
   std::recursive_mutex m_pmMutex;
   std::atomic_bool m_shutdown{false};
 
   // some projectm globals
-  const static int maxSamples = 512;
-  const static int texsize = 512;
-  const static int gx = 40, gy = 30;
-  const static int fps = 100;
+  const static int gx{40};
+  const static int gy{30};
+  const static int fps{60};
 };

@@ -54,7 +54,9 @@
           <default>true</default>
           <control type="toggle" />
         </setting>
+        <!-- Used on Windows where projectM version 3 about Angle is required and have this setting-->
         <setting id="quality" type="integer" label="30000" help="0">
+          <requirement>HAS_DX</requirement>
           <default>512</default>
           <constraints>
             <options>

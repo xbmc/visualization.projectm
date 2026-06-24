@@ -74,17 +74,44 @@ const std::unordered_map<int, preset_info> installed_presets = {
 
 CVisualizationProjectM::~CVisualizationProjectM()
 {
-  unsigned int lastindex = 0;
-  m_projectM->selectedPresetIndex(lastindex);
   m_shutdown = true;
-  kodi::addon::SetSettingInt("last_preset_idx", lastindex);
-  kodi::addon::SetSettingString("last_preset_folder", m_projectM->settings().presetURL);
-  kodi::addon::SetSettingBoolean("last_locked_status", m_projectM->isPresetLocked());
 
-  if (m_projectM)
   {
-    delete m_projectM;
-    m_projectM = nullptr;
+    std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
+
+    if (m_playlist && m_projectM)
+    {
+      // Remove our used callback about preset change event from ProjectM
+      projectm_playlist_set_preset_switched_event_callback(m_playlist, nullptr, nullptr);
+
+      // Store the last used preset to have on next use.
+      auto lastindex = projectm_playlist_get_position(m_playlist);
+      kodi::addon::SetSettingInt("last_preset_idx", lastindex);
+      kodi::addon::SetSettingString("last_preset_folder", m_settings.last_preset_folder);
+      kodi::addon::SetSettingBoolean("last_locked_status", projectm_get_preset_locked(m_projectM));
+
+      // WARNING: Within the current projectM Version 4 we have a problem that if some processing parts about becomes changed,
+      // for example the preset, the screen becomes black after stop.
+      // Hopefully we find a way to fix this in future, but for now we have to avoid calls to ProjectM.
+      //
+      // NOTE: The problem comes after unload of the add-on library, not with destroy calls below.
+      //
+      // !!! Use this to reproduce the fault of black screen after stop !!!
+      //projectm_load_preset_file(
+      //    m_projectM, "idle://Geiss & Sperl - Feedback (projectM idle HDR mix).milk", false);
+    }
+
+    if (m_playlist)
+    {
+      projectm_playlist_destroy(m_playlist);
+      m_playlist = nullptr;
+    }
+
+    if (m_projectM)
+    {
+      projectm_destroy(m_projectM);
+      m_projectM = nullptr;
+    }
   }
 }
 
@@ -101,35 +128,91 @@ bool CVisualizationProjectM::Init()
   m_settings.last_preset_idx = kodi::addon::GetSettingInt("last_preset_idx");
   m_settings.last_locked_status = kodi::addon::GetSettingBoolean("last_locked_status");
   m_settings.shuffle = kodi::addon::GetSettingBoolean("shuffle");
-  m_settings.quality = kodi::addon::GetSettingInt("quality");
   m_settings.smooth_duration = static_cast<double>(kodi::addon::GetSettingFloat("smooth_duration"));
   m_settings.preset_duration = static_cast<double>(kodi::addon::GetSettingFloat("preset_duration"));
   m_settings.beat_sens = kodi::addon::GetSettingFloat("beat_sens");
-
-  m_configPM.meshX = gx;
-  m_configPM.meshY = gy;
-  m_configPM.fps = fps;
-  m_configPM.windowWidth = Width();
-  m_configPM.windowHeight = Height();
-  m_configPM.aspectCorrection = true;
-  m_configPM.easterEgg = 0.0;
-  m_configPM.titleFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/Vera.ttf");
-  m_configPM.menuFontURL = kodi::addon::GetAddonPath("resources/projectM/fonts/VeraMono.ttf");
-  m_configPM.datadir = kodi::addon::GetAddonPath("resources/projectM");
-  m_configPM.textureSize = m_settings.quality;
-  m_configPM.shuffleEnabled = m_settings.shuffle;
-  m_configPM.smoothPresetDuration = static_cast<int>(m_settings.smooth_duration);
-  m_configPM.presetDuration = static_cast<int>(m_settings.preset_duration);
-  m_configPM.beatSensitivity = m_settings.beat_sens;
-
-  ChoosePresetPack(m_settings.preset_pack);
-  ChooseUserPresetFolder(m_settings.user_preset_folder);
 
   if (!InitProjectM())
   {
     kodi::Log(ADDON_LOG_FATAL, "Failed to initialize projectM - addon will not function");
     // Object is in invalid state - all subsequent method calls must check m_projectM/m_playlist
     return false;
+  }
+
+  projectm_set_mesh_size(m_projectM, gx, gy);
+  projectm_set_fps(m_projectM, fps);
+  projectm_set_window_size(m_projectM, Width(), Height());
+  projectm_set_aspect_correction(m_projectM, true);
+  projectm_set_easter_egg(m_projectM, 0.0);
+
+  m_texturePath = kodi::addon::GetAddonPath("resources/projectM/textures");
+  std::vector<const char*> texturePaths = {m_texturePath.data()};
+  projectm_set_texture_search_paths(m_projectM, texturePaths.data(), texturePaths.size());
+
+  projectm_playlist_set_shuffle(m_playlist, m_settings.shuffle);
+  projectm_set_soft_cut_duration(m_projectM, m_settings.smooth_duration);
+  projectm_set_preset_duration(m_projectM, m_settings.preset_duration);
+  projectm_set_beat_sensitivity(m_projectM, m_settings.beat_sens);
+
+  // Store here the old to have after the following function calls available, as
+  // it can be changed there.
+  const std::string presetFolderBefore = m_settings.last_preset_folder;
+
+  ChoosePresetPack(m_settings.preset_pack);
+  ChooseUserPresetFolder(m_settings.user_preset_folder);
+
+  // Populate playlist and set initial index
+  uint32_t presetsAdded =
+      projectm_playlist_add_path(m_playlist, m_settings.last_preset_folder.c_str(), true, false);
+  if (presetsAdded == 0)
+  {
+    kodi::Log(ADDON_LOG_WARNING, "Init: Failed to load presets from: %s, falling back to default",
+              m_settings.last_preset_folder.c_str());
+
+    m_settings.last_preset_folder.clear();
+    m_settings.last_preset_idx = 0;
+    m_settings.preset_pack = DEFAULT_PRESET;
+    ChoosePresetPack(m_settings.preset_pack);
+
+    presetsAdded =
+        projectm_playlist_add_path(m_playlist, m_settings.last_preset_folder.c_str(), true, false);
+    if (presetsAdded == 0)
+    {
+      kodi::Log(ADDON_LOG_FATAL,
+                "Init: Failed to load default presets (where should always present) from: %s - "
+                "addon will not function",
+                m_settings.last_preset_folder.c_str());
+
+      return false;
+    }
+  }
+
+  // If it is not the first run AND if this is the same preset pack as last time
+  if (presetFolderBefore == m_settings.last_preset_folder && m_settings.last_preset_idx > 0)
+  {
+    const auto playlistSize = projectm_playlist_size(m_playlist);
+    if (m_settings.last_preset_idx >= playlistSize)
+    {
+      kodi::Log(ADDON_LOG_ERROR,
+                "Init: Last selected preset index %i out of range of available presets %i, falling "
+                "back to first",
+                static_cast<int>(m_settings.last_preset_idx), playlistSize);
+      m_settings.last_preset_idx = 0;
+    }
+
+    projectm_playlist_set_position(m_playlist, m_settings.last_preset_idx, true);
+    projectm_set_preset_locked(m_projectM, m_settings.last_locked_status);
+  }
+  else
+  {
+    // If it is the first run or a newly chosen preset pack we choose a random preset as first
+    if (projectm_playlist_size(m_playlist) > 0)
+    {
+      auto shuffleEnabled = projectm_playlist_get_shuffle(m_playlist);
+      projectm_playlist_set_shuffle(m_playlist, true);
+      projectm_playlist_play_next(m_playlist, true);
+      projectm_playlist_set_shuffle(m_playlist, shuffleEnabled);
+    }
   }
 
   return true;
@@ -142,7 +225,10 @@ void CVisualizationProjectM::AudioData(const float* pAudioData, size_t iAudioDat
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
-    m_projectM->pcm()->addPCMfloat_2ch(pAudioData, iAudioDataLength);
+  {
+    projectm_pcm_add_float(m_projectM, pAudioData, iAudioDataLength / 2,
+                           static_cast<projectm_channels>(2));
+  }
 }
 
 //-- Render -------------------------------------------------------------------
@@ -152,26 +238,28 @@ void CVisualizationProjectM::Render()
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
-    m_projectM->renderFrame();
+  {
+    projectm_opengl_render_frame(m_projectM);
+  }
 }
 
 bool CVisualizationProjectM::LoadPreset(int select)
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  m_projectM->selectPreset(select);
+  if (m_playlist)
+  {
+    projectm_playlist_set_position(m_playlist, select, true);
+  }
   return true;
 }
 
 bool CVisualizationProjectM::PrevPreset()
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  //  switchPreset(ALPHA_PREVIOUS, SOFT_CUT);
-  if (!m_projectM->isShuffleEnabled())
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_p,
-                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
-  else
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r,
-                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+  if (m_playlist)
+  {
+    projectm_playlist_play_previous(m_playlist, false);
+  }
 
   return true;
 }
@@ -179,30 +267,34 @@ bool CVisualizationProjectM::PrevPreset()
 bool CVisualizationProjectM::NextPreset()
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  //  switchPreset(ALPHA_NEXT, SOFT_CUT);
-  if (!m_projectM->isShuffleEnabled())
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_n,
-                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
-  else
-    m_projectM->key_handler(PROJECTM_KEYDOWN, PROJECTM_K_r,
-                            PROJECTM_KMOD_CAPS); //ignore PROJECTM_KMOD_CAPS
+  if (m_playlist)
+  {
+    projectm_playlist_play_next(m_playlist, false);
+  }
+
   return true;
 }
 
 bool CVisualizationProjectM::RandomPreset()
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  m_projectM->setShuffleEnabled(m_configPM.shuffleEnabled);
+  if (m_playlist)
+  {
+    auto shuffleEnabled = projectm_playlist_get_shuffle(m_playlist);
+    projectm_playlist_set_shuffle(m_playlist, true);
+    projectm_playlist_play_next(m_playlist, false);
+    projectm_playlist_set_shuffle(m_playlist, shuffleEnabled);
+  }
   return true;
 }
 
 bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  m_projectM->setPresetLock(lockUnlock);
-  unsigned preset;
-  m_projectM->selectedPresetIndex(preset);
-  m_projectM->selectPreset(preset);
+  if (m_projectM)
+  {
+    projectm_set_preset_locked(m_projectM, lockUnlock);
+  }
   return true;
 }
 
@@ -212,13 +304,34 @@ bool CVisualizationProjectM::LockPreset(bool lockUnlock)
 bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  int numPresets = m_projectM ? m_projectM->getPlaylistSize() : 0;
-  if (numPresets > 0)
+  if (!m_playlist)
   {
-    for (unsigned i = 0; i < numPresets; i++)
-      presets.push_back(m_projectM->getPresetName(i));
+    return false;
   }
-  return (numPresets > 0) ? true : false;
+
+  char** playlistItems = projectm_playlist_items(m_playlist, 0, projectm_playlist_size(m_playlist));
+  if (!playlistItems)
+  {
+    return false;
+  }
+
+  try
+  {
+    char** item = playlistItems;
+    while (*item)
+    {
+      presets.push_back(GetBasename(*item));
+      item++;
+    }
+    projectm_playlist_free_string_array(playlistItems);
+  }
+  catch (...)
+  {
+    projectm_playlist_free_string_array(playlistItems);
+    throw;
+  }
+
+  return !presets.empty();
 }
 
 //-- GetPreset ----------------------------------------------------------------
@@ -226,10 +339,11 @@ bool CVisualizationProjectM::GetPresets(std::vector<std::string>& presets)
 //-----------------------------------------------------------------------------
 int CVisualizationProjectM::GetActivePreset()
 {
-  unsigned preset;
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  if (m_projectM && m_projectM->selectedPresetIndex(preset))
-    return preset;
+  if (m_playlist)
+  {
+    return static_cast<int>(projectm_playlist_get_position(m_playlist));
+  }
 
   return 0;
 }
@@ -241,9 +355,11 @@ bool CVisualizationProjectM::IsLocked()
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
-    return m_projectM->isPresetLocked();
-  else
-    return false;
+  {
+    return projectm_get_preset_locked(m_projectM);
+  }
+
+  return false;
 }
 
 //-- UpdateSetting ------------------------------------------------------------
@@ -279,8 +395,12 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
         {
           m_settingChanged = true;
 
-          m_settings.preset_pack = newValue;
           ChoosePresetPack(newValue);
+          if (kodi::addon::GetSettingString("last_preset_folder", "") !=
+              m_settings.last_preset_folder)
+          {
+            ReloadPlaylist();
+          }
         }
       }
       else if (settingName == "user_preset_folder")
@@ -292,6 +412,11 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
 
           m_settings.user_preset_folder = newValue;
           ChooseUserPresetFolder(newValue);
+          if (kodi::addon::GetSettingString("last_preset_folder", "") !=
+              m_settings.last_preset_folder)
+          {
+            ReloadPlaylist();
+          }
         }
       }
       else if (settingName == "last_preset_folder")
@@ -304,6 +429,17 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settings.last_preset_folder = newValue;
         }
       }
+      else if (settingName == "last_preset_folder")
+      {
+        const std::string newValue = settingValue.GetString();
+        if (m_settings.last_preset_folder != newValue)
+        {
+          m_settingChanged = true;
+
+          m_settings.last_preset_folder = newValue;
+          ReloadPlaylist();
+        }
+      }
       else if (settingName == "last_preset_idx")
       {
         const int newValue = settingValue.GetInt();
@@ -312,6 +448,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settingChanged = true;
 
           m_settings.last_preset_idx = newValue;
+          projectm_playlist_set_position(m_playlist, m_settings.last_preset_idx, false);
         }
       }
       else if (settingName == "last_locked_status")
@@ -322,6 +459,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settingChanged = true;
 
           m_settings.last_locked_status = newValue;
+          projectm_set_preset_locked(m_projectM, m_settings.last_locked_status);
         }
       }
       else if (settingName == "shuffle")
@@ -332,18 +470,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settingChanged = true;
 
           m_settings.shuffle = newValue;
-          m_configPM.shuffleEnabled = m_settings.shuffle;
-        }
-      }
-      else if (settingName == "quality")
-      {
-        const int newValue = settingValue.GetInt();
-        if (m_settings.last_preset_idx != newValue)
-        {
-          m_settingChanged = true;
-
-          m_settings.quality = newValue;
-          m_configPM.textureSize = m_settings.quality;
+          projectm_playlist_set_shuffle(m_playlist, m_settings.shuffle);
         }
       }
       else if (settingName == "smooth_duration")
@@ -354,7 +481,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settingChanged = true;
 
           m_settings.smooth_duration = newValue;
-          m_configPM.smoothPresetDuration = static_cast<int>(m_settings.smooth_duration);
+          projectm_set_soft_cut_duration(m_projectM, m_settings.smooth_duration);
         }
       }
       else if (settingName == "preset_duration")
@@ -365,7 +492,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settingChanged = true;
 
           m_settings.preset_duration = newValue;
-          m_configPM.presetDuration = static_cast<int>(m_settings.preset_duration);
+          projectm_set_preset_duration(m_projectM, m_settings.preset_duration);
         }
       }
       else if (settingName == "beat_sens")
@@ -376,7 +503,7 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           m_settingChanged = true;
 
           m_settings.beat_sens = newValue;
-          m_configPM.beatSensitivity = m_settings.beat_sens;
+          projectm_set_beat_sensitivity(m_projectM, m_settings.beat_sens);
         }
       }
     }
@@ -406,28 +533,79 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
 bool CVisualizationProjectM::InitProjectM()
 {
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  delete m_projectM; //We are re-initializing the engine
+
+  if (m_playlist)
+  {
+    projectm_playlist_connect(m_playlist, nullptr);
+  }
+
+  projectm_handle oldProjectM = nullptr;
+
+  if (m_projectM)
+  {
+    // We are re-initializing the engine, if fails fallback to old
+    oldProjectM = m_projectM;
+    m_projectM = nullptr;
+  }
+
   try
   {
-    m_projectM = new projectM(m_configPM);
-    if (m_configPM.presetURL ==
-        m_settings
-            .last_preset_folder) //If it is not the first run AND if this is the same preset pack as last time
+    m_projectM = projectm_create();
+    if (!m_projectM)
     {
-      m_projectM->setPresetLock(m_settings.last_locked_status);
-      m_projectM->selectPreset(m_settings.last_preset_idx);
+      if (!oldProjectM)
+      {
+        kodi::Log(ADDON_LOG_FATAL, "Could not create projectM instance.");
+        return false;
+      }
+      else
+      {
+        kodi::Log(ADDON_LOG_ERROR,
+                  "Could not create new projectM instance, falling back to previous created one");
+        m_projectM = oldProjectM;
+      }
+    }
+
+    if (!m_playlist)
+    {
+      m_playlist = projectm_playlist_create(m_projectM);
+      if (!m_playlist)
+      {
+        projectm_destroy(m_projectM);
+        m_projectM = nullptr;
+        kodi::Log(ADDON_LOG_FATAL, "Could not create projectM playlist instance.");
+        return false;
+      }
+
+      // Automatically update last preset index if it changes
+      projectm_playlist_set_preset_switched_event_callback(
+          m_playlist, &CVisualizationProjectM::PresetSwitchedEvent, static_cast<void*>(this));
     }
     else
     {
-      //If it is the first run or a newly chosen preset pack we choose a random preset as first
-      if (m_projectM->getPlaylistSize())
-        m_projectM->selectPreset((rand() % (m_projectM->getPlaylistSize())));
+      // Reconnect new instance with existing playlist manager
+      projectm_playlist_connect(m_playlist, m_projectM);
     }
+
+    if (oldProjectM)
+    {
+      projectm_destroy(oldProjectM);
+    }
+
     return true;
   }
   catch (...)
   {
-    kodi::Log(ADDON_LOG_FATAL, "exception in projectM ctor");
+    if (!oldProjectM)
+    {
+      kodi::Log(ADDON_LOG_FATAL, "exception in projectM ctor");
+    }
+    else
+    {
+      kodi::Log(ADDON_LOG_ERROR,
+                "exception in projectM ctor, falling back to previous created one");
+      m_projectM = oldProjectM;
+    }
     return false;
   }
 }
@@ -444,16 +622,14 @@ void CVisualizationProjectM::ChoosePresetPack(int pvalue)
   const auto entry = installed_presets.find(pvalue);
   if (entry == installed_presets.end())
   {
-    kodi::Log(ADDON_LOG_FATAL,
-              "CVisualizationProjectM::%s: Should never called with unknown preset pack (%i)",
-              __func__, pvalue);
+    kodi::Log(ADDON_LOG_FATAL, "%s: Should never called with unknown preset pack (%i)", __func__,
+              pvalue);
     return;
   }
 
   m_UserPackFolder = false;
   m_settings.preset_pack = pvalue;
   m_settings.last_preset_folder = kodi::addon::GetAddonPath(entry->second.path);
-  m_configPM.presetURL = m_settings.last_preset_folder;
 }
 
 void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
@@ -461,10 +637,67 @@ void CVisualizationProjectM::ChooseUserPresetFolder(std::string pvalue)
   if (m_UserPackFolder && !pvalue.empty())
   {
     if (pvalue.back() == '/')
+    {
       pvalue.erase(pvalue.length() - 1, 1); //Remove "/" from the end
+    }
+
     m_settings.last_preset_folder = pvalue;
-    m_configPM.presetURL = m_settings.last_preset_folder;
   }
+}
+
+std::string CVisualizationProjectM::GetBasename(std::string fullPath)
+{
+  auto lastSlash = fullPath.find_last_of("/\\");
+  if (lastSlash != std::string::npos)
+  {
+    fullPath = fullPath.substr(lastSlash + 1);
+  }
+
+  auto lastExt = fullPath.find_last_of(".");
+  if (lastExt != std::string::npos && lastExt != 0)
+  {
+    fullPath = fullPath.substr(0, lastExt);
+  }
+  return fullPath;
+}
+
+void CVisualizationProjectM::ReloadPlaylist()
+{
+  // Load new playlist and select a random preset
+  projectm_playlist_clear(m_playlist);
+  uint32_t presetsAdded =
+      projectm_playlist_add_path(m_playlist, m_settings.last_preset_folder.c_str(), true, false);
+  if (presetsAdded == 0)
+  {
+    kodi::Log(ADDON_LOG_WARNING, "%s: Failed to load presets from: %s, falling back to default",
+              __func__, m_settings.last_preset_folder.c_str());
+    m_settings.preset_pack = DEFAULT_PRESET;
+    ChoosePresetPack(m_settings.preset_pack);
+    presetsAdded =
+        projectm_playlist_add_path(m_playlist, m_settings.last_preset_folder.c_str(), true, false);
+  }
+  if (presetsAdded > 0)
+  {
+    auto shuffleEnabled = projectm_playlist_get_shuffle(m_playlist);
+    projectm_playlist_set_shuffle(m_playlist, true);
+    projectm_playlist_play_next(m_playlist, true);
+    projectm_playlist_set_shuffle(m_playlist, shuffleEnabled);
+  }
+}
+
+void CVisualizationProjectM::PresetSwitchedEvent(bool isHardCut, unsigned int index, void* context)
+{
+  if (!context)
+    return;
+  auto that = reinterpret_cast<CVisualizationProjectM*>(context);
+
+  std::unique_lock<std::recursive_mutex> lock(that->m_pmMutex);
+
+  if (that->m_shutdown || !that->m_playlist)
+    return;
+
+  that->m_settings.last_preset_idx =
+      static_cast<int>(projectm_playlist_get_position(that->m_playlist));
 }
 
 ADDONCREATOR(CVisualizationProjectM)
