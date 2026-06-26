@@ -225,6 +225,29 @@ bool CVisualizationProjectM::Init()
   return true;
 }
 
+bool CVisualizationProjectM::AudioStart(int channels, int samplesPerSec, int bitsPerSample)
+{
+  // Validate channel count
+  if (channels <= 0)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "Invalid channel count: %d", channels);
+    return false;
+  }
+
+  // Store channels amount for use in AudioData()
+  //
+  // Inside projectM about "projectm_pcm_add_float(...)" described as follow:
+  //   param channels If the buffer is mono or stereo.
+  //   Can be PROJECTM_MONO, PROJECTM_STEREO or the actual numerical channel count.
+  // Processing in ProjectM visible by "libprojectM/Audio/PCM.cpp", there as "uint32_t"
+  // Badly between the enum used.
+  //
+  // NOTE: During tests it was always given as stereo, also by mono and surround file playback.
+  m_playedChannelAmount = channels;
+
+  return true;
+}
+
 //-- Audiodata ----------------------------------------------------------------
 // Called by Kodi to pass new audio data to the vis
 //-----------------------------------------------------------------------------
@@ -233,8 +256,8 @@ void CVisualizationProjectM::AudioData(const float* pAudioData, size_t iAudioDat
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
   {
-    projectm_pcm_add_float(m_projectM, pAudioData, iAudioDataLength / 2,
-                           static_cast<projectm_channels>(2));
+    projectm_pcm_add_float(m_projectM, pAudioData, iAudioDataLength / m_playedChannelAmount,
+                           static_cast<projectm_channels>(m_playedChannelAmount));
   }
 }
 

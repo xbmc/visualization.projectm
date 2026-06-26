@@ -57,6 +57,7 @@ public:
 
   bool Init() override;
   void Render() override;
+  bool AudioStart(int channels, int samplesPerSec, int bitsPerSample) override;
   void AudioData(const float* audioData, size_t audioDataLength) override;
   bool GetPresets(std::vector<std::string>& presets) override;
   bool LoadPreset(int select) override;
@@ -83,6 +84,7 @@ private:
   bool m_settingChanged{true};
   bool m_UserPackFolder{false};
   std::string m_texturePath;
+  uint32_t m_playedChannelAmount{PROJECTM_STEREO};
 
   // Stored values where we get from settings.xml
   // The name and order is identical to settings.xml.
