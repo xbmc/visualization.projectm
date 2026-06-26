@@ -52,7 +52,7 @@ class ATTR_DLL_LOCAL CVisualizationProjectM : public kodi::addon::CAddonBase,
                                               public kodi::addon::CInstanceVisualization
 {
 public:
-  CVisualizationProjectM() = default;
+  CVisualizationProjectM();
   ~CVisualizationProjectM() override;
 
   bool Init() override;
@@ -76,6 +76,9 @@ private:
   std::string GetBasename(std::string fullPath);
   void ReloadPlaylist();
   static void PresetSwitchedEvent(bool isHardCut, unsigned int index, void* context);
+  static void ProjectMLogCallback(const char* message,
+                                  projectm_log_level log_level,
+                                  void* user_data);
 
   bool m_settingChanged{true};
   bool m_UserPackFolder{false};

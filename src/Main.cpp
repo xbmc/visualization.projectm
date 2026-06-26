@@ -72,6 +72,13 @@ const std::unordered_map<int, preset_info> installed_presets = {
 
 } // namespace
 
+CVisualizationProjectM::CVisualizationProjectM()
+{
+  // Use ProjectM logging API functions and callbacks
+  projectm_set_log_callback(&ProjectMLogCallback, false, this);
+  projectm_set_log_level(PROJECTM_LOG_LEVEL_NOTSET, false);
+}
+
 CVisualizationProjectM::~CVisualizationProjectM()
 {
   m_shutdown = true;
@@ -698,6 +705,34 @@ void CVisualizationProjectM::PresetSwitchedEvent(bool isHardCut, unsigned int in
 
   that->m_settings.last_preset_idx =
       static_cast<int>(projectm_playlist_get_position(that->m_playlist));
+}
+
+void CVisualizationProjectM::ProjectMLogCallback(const char* message,
+                                                 projectm_log_level log_level,
+                                                 void* user_data)
+{
+  ADDON_LOG level;
+  switch (log_level)
+  {
+    case PROJECTM_LOG_LEVEL_INFO:
+      level = ADDON_LOG_INFO;
+      break;
+    case PROJECTM_LOG_LEVEL_WARN:
+      level = ADDON_LOG_WARNING;
+      break;
+    case PROJECTM_LOG_LEVEL_ERROR:
+      level = ADDON_LOG_ERROR;
+      break;
+    case PROJECTM_LOG_LEVEL_FATAL:
+      level = ADDON_LOG_FATAL;
+      break;
+    case PROJECTM_LOG_LEVEL_TRACE:
+    case PROJECTM_LOG_LEVEL_DEBUG:
+    default:
+      level = ADDON_LOG_DEBUG;
+      break;
+  }
+  kodi::Log(level, "ProjectMLib: %s", message);
 }
 
 ADDONCREATOR(CVisualizationProjectM)
