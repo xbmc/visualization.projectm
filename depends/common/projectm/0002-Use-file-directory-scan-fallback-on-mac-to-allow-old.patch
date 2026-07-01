@@ -1,0 +1,298 @@
+From 26beeb891ab55976fdca4762c50681e027364fee Mon Sep 17 00:00:00 2001
+From: Alwin Esch <alwin.esch@web.de>
+Date: Sun, 14 Jun 2026 12:15:49 +0200
+Subject: [PATCH] Use file directory scan fallback on mac to allow older API
+ versions
+
+---
+ src/libprojectM/Renderer/FileScanner.cpp | 102 ++++++++++++++++++++
+ src/playlist/Playlist.cpp                | 116 +++++++++++++++++++++++
+ 2 files changed, 218 insertions(+)
+
+diff --git a/src/libprojectM/Renderer/FileScanner.cpp b/src/libprojectM/Renderer/FileScanner.cpp
+index 26ad774..4ada7a5 100644
+--- a/src/libprojectM/Renderer/FileScanner.cpp
++++ b/src/libprojectM/Renderer/FileScanner.cpp
+@@ -2,12 +2,33 @@
+ 
+ #include "Utils.hpp"
+ 
++#ifdef __APPLE__
++#import <TargetConditionals.h>
++#define SYSTEM_VERSION_LESS_THAN(v) ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
++
++#ifdef TARGET_OS_OSX
++#ifdef SYSTEM_VERSION_LESS_THAN(@"10.15")
++#define DIR_ITERATOR_FALLBACK
++#endif
++#else
++#ifdef SYSTEM_VERSION_LESS_THAN(@"13.0")
++#define DIR_ITERATOR_FALLBACK
++#endif
++#endif
++#endif
++
+ #include <algorithm>
+ #include <cctype>
+ 
++#ifdef DIR_ITERATOR_FALLBACK
++#include <dirent.h>
++#include <string.h>
++#include <sys/stat.h>
++#else
+ // Fall back to boost if compiler doesn't support C++17
+ #include PROJECTM_FILESYSTEM_INCLUDE
+ using namespace PROJECTM_FILESYSTEM_NAMESPACE::filesystem;
++#endif
+ 
+ namespace libprojectM {
+ namespace Renderer {
+@@ -23,6 +44,85 @@ FileScanner::FileScanner(const std::vector<std::string>& rootDirs, std::vector<s
+     }
+ }
+ 
++#ifdef DIR_ITERATOR_FALLBACK
++
++namespace {
++std::string GetDirectory(const std::string& strFilePath)
++{
++    // Will from a full filename return the directory the file resides in.
++    // Keeps the final slash at end and possible |option=foo options.
++
++    size_t iPosSlash = strFilePath.find_last_of("/\\");
++    if (iPosSlash == std::string::npos)
++        return ""; // No slash, so no path (ignore any options)
++
++    size_t iPosBar = strFilePath.rfind('|');
++    if (iPosBar == std::string::npos)
++        return strFilePath.substr(0, iPosSlash + 1); // Only path
++
++    return strFilePath.substr(0, iPosSlash + 1) + strFilePath.substr(iPosBar); // Path + options
++}
++} // namespace
++
++void FileScanner::Scan(ScanCallback callback)
++{
++    for (const auto& currentPath : _rootDirs)
++    {
++        try
++        {
++            if (currentPath.empty())
++                continue;
++
++            struct stat statbuf;
++
++            if (stat(currentPath.c_str(), &statbuf) != 0)
++            {
++                continue;
++            }
++
++            // Skip regular files and other stuff
++            if (S_ISDIR(statbuf.st_mode) == 0)
++            {
++                continue;
++            }
++
++            DIR* dirp;
++            if ((dirp = opendir(currentPath.c_str())) == NULL)
++            {
++                continue;
++            }
++
++            struct dirent* dp;
++            while ((dp = readdir(dirp)) != NULL)
++            {
++                /* Get entry's information. */
++                if (stat(dp->d_name, &statbuf) == -1)
++                    continue;
++
++                if (S_ISREG(statbuf.st_mode) == 0)
++                    continue;
++
++                const char* dot = strrchr(dp->d_name, '.');
++                if (!dot || dot == dp->d_name)
++                    continue;
++
++                auto extension = Utils::ToLower(dot + 1);
++                if (std::find(_extensions.begin(), _extensions.end(), extension) != _extensions.end())
++                {
++                    callback(dp->d_name, GetDirectory(dp->d_name));
++                }
++            }
++
++        }
++        catch (std::exception&)
++        {
++            // ToDo: Log error. We ignore it for now.
++        }
++    }
++}
++
++#else
++
+ void FileScanner::Scan(ScanCallback callback)
+ {
+     for (const auto& currentPath : _rootDirs)
+@@ -79,5 +179,7 @@ void FileScanner::Scan(ScanCallback callback)
+     }
+ }
+ 
++#endif
++
+ } // namespace Renderer
+ } // namespace libprojectM
+diff --git a/src/playlist/Playlist.cpp b/src/playlist/Playlist.cpp
+index 6c609ed..45d0de4 100644
+--- a/src/playlist/Playlist.cpp
++++ b/src/playlist/Playlist.cpp
+@@ -1,8 +1,48 @@
+ #include "Playlist.hpp"
+ 
++#ifdef __APPLE__
++  #import  <TargetConditionals.h>
++  #define SYSTEM_VERSION_LESS_THAN(v) ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
++
++  #ifdef TARGET_OS_OSX
++    #ifdef SYSTEM_VERSION_LESS_THAN(@"10.15")
++      #define DIR_ITERATOR_FALLBACK
++    #endif
++  #else
++    #ifdef SYSTEM_VERSION_LESS_THAN(@"13.0")
++      #define DIR_ITERATOR_FALLBACK
++    #endif
++  #endif
++#endif
++
+ #include <algorithm>
+ #include <chrono>
+ 
++#ifdef DIR_ITERATOR_FALLBACK
++#include <dirent.h>
++#include <string.h>
++
++namespace {
++
++std::string GetFileName(const std::string& strFileNameAndPath)
++{
++    int i = strFileNameAndPath.size() - 1;
++    while (i >= 0)
++    {
++        const char ch = strFileNameAndPath[i];
++        // Only break on ':' if it's a drive separator for DOS (ie d:foo)
++        if (ch == '/' || ch == '\\' || (ch == ':' && i == 1))
++            break;
++        else
++            i--;
++    }
++    return strFileNameAndPath.substr(i + 1);
++}
++
++} // namespace
++
++#endif
++
+ // Fall back to boost if compiler doesn't support C++17
+ #include PROJECTM_FILESYSTEM_INCLUDE
+ using namespace PROJECTM_FILESYSTEM_NAMESPACE::filesystem;
+@@ -88,6 +128,76 @@ bool Playlist::AddItem(const std::string& filename, uint32_t index, bool allowDu
+     return true;
+ }
+ 
++#ifdef DIR_ITERATOR_FALLBACK
++
++auto Playlist::AddPath(const std::string& path, uint32_t index, bool recursive, bool allowDuplicates) -> uint32_t
++{
++    uint32_t presetsAdded{0};
++
++    if (path.empty())
++        return presetsAdded;
++
++    std::string pathUsed = path;
++    if (path.back() != '/')
++        pathUsed += '/';
++
++    DIR* dir = nullptr;
++    struct dirent* dp = nullptr;
++
++    try
++    {
++        if ((dir = opendir(path.c_str())) != nullptr)
++        {
++            while ((dp = readdir(dir)) != nullptr)
++            {
++                if (strlen(dp->d_name) == 0 || dp->d_name[0] == '.')
++                    continue;
++
++                std::string name = pathUsed + dp->d_name;
++
++                if (dp->d_type == DT_DIR)
++                {
++                    if (recursive)
++                        presetsAdded += AddPath(name, index + presetsAdded, true, allowDuplicates);
++                }
++                else if (dp->d_type == DT_REG)
++                {
++                    if (name.substr(name.find_last_of(".")) == ".milk")
++                    {
++                        uint32_t currentIndex{InsertAtEnd};
++                        if (index < InsertAtEnd)
++                        {
++                            currentIndex = index + presetsAdded;
++                        }
++                        if (AddItem(name, currentIndex, allowDuplicates))
++                        {
++                            presetsAdded++;
++                        }
++                    }
++                }
++            }
++            closedir(dir);
++        }
++    }
++    catch (std::exception&)
++    {
++        // Todo: Add failure feedback
++        return presetsAdded;
++    }
++
++    // Increment indices of items in playback history equal or grater than the newly added index.
++    for (auto& historyItem : m_presetHistory)
++    {
++        if (historyItem >= index)
++        {
++            historyItem += presetsAdded;
++        }
++    }
++
++    return presetsAdded;
++}
++
++#else
+ 
+ auto Playlist::AddPath(const std::string& path, uint32_t index, bool recursive, bool allowDuplicates) -> uint32_t
+ {
+@@ -150,6 +260,7 @@ auto Playlist::AddPath(const std::string& path, uint32_t index, bool recursive,
+     return presetsAdded;
+ }
+ 
++#endif
+ 
+ auto Playlist::RemoveItem(uint32_t index) -> bool
+ {
+@@ -222,8 +333,13 @@ void Playlist::Sort(uint32_t startIndex, uint32_t count,
+                           break;
+ 
+                       case SortPredicate::FilenameOnly: {
++#ifdef DIR_ITERATOR_FALLBACK
++                          leftFilename = GetFileName(left.Filename());
++                          rightFilename = GetFileName(right.Filename());
++#else
+                           leftFilename = path(left.Filename()).filename().string();
+                           rightFilename = path(right.Filename()).filename().string();
++#endif
+                           break;
+                       }
+                   }
+-- 
+2.53.0
+
