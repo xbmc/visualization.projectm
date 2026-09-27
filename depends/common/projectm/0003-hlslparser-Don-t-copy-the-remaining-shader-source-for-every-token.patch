@@ -1,0 +1,65 @@
+From 5313e752fa59b2b9d6c06c39cd9e45b76c1614f1 Mon Sep 17 00:00:00 2001
+From: ksooo <kai.sommerfeld@gmx.com>
+Date: Fri, 25 Sep 2026 08:20:07 +0200
+Subject: [PATCH] hlslparser: Don't copy the remaining shader source for every
+ token
+
+HLSLTokenizer::ScanNumber() is called for every token and uses
+String_ToDouble(), which constructed a std::istringstream from the
+whole remaining input and a new std::locale("C") on each call. This
+makes HLSL translation quadratic in the shader length and stalls
+rendering for a noticeable time when switching to presets with large
+shaders, especially on slower devices.
+
+Only pass the characters that can form a number to the stream and use
+the classic locale.
+---
+ vendor/hlslparser/src/Engine.cpp | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/vendor/hlslparser/src/Engine.cpp b/vendor/hlslparser/src/Engine.cpp
+index 4b06b90..04b87f9 100644
+--- a/vendor/hlslparser/src/Engine.cpp
++++ b/vendor/hlslparser/src/Engine.cpp
+@@ -1,5 +1,6 @@
+ 
+ #include "Engine.h"
++#include <cctype>
+ 
+ //#include "libprojectM/Logging.hpp"
+ 
+@@ -71,16 +72,28 @@ bool String_EqualNoCase(const char * a, const char * b) {
+ 
+ static inline double iss_strtod(const char * in, char ** end) {
+     char * in_var = const_cast<char *>(in);
++
++    // The tokenizer calls this for every token, so only the characters that can form a number
++    // are passed to the stream.
++    const char * numEnd = in;
++    while (isdigit(*numEnd) || *numEnd == '.' || *numEnd == 'e' || *numEnd == 'E' ||
++           ((*numEnd == '+' || *numEnd == '-') && numEnd > in && (numEnd[-1] == 'e' || numEnd[-1] == 'E')))
++        ++numEnd;
++    if (numEnd == in) {
++        *end = in_var;
++        return 0.0;
++    }
++
+     double df;
+-    std::istringstream iss(in);
+-    iss.imbue(std::locale("C"));
++    std::istringstream iss(std::string(in, numEnd));
++    iss.imbue(std::locale::classic());
+     iss >> df;
+     if(iss.fail()) {
+         *end = in_var;
+         return 0.0;
+     }
+     if(iss.eof()) {
+-        *end = in_var + strlen(in);
++        *end = in_var + (numEnd - in);
+         return df;
+     }
+ 
+-- 
+2.54.0 (Apple Git-157)
+

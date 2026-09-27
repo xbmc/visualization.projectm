@@ -47,6 +47,7 @@ d4rk@xbmc.org
 #include <mutex>
 #include <projectM-4/playlist.h>
 #include <projectM-4/projectM.h>
+#include <vector>
 
 class ATTR_DLL_LOCAL CVisualizationProjectM : public kodi::addon::CAddonBase,
                                               public kodi::addon::CInstanceVisualization
@@ -105,6 +106,8 @@ private:
   projectm_handle m_projectM{nullptr};
   projectm_playlist_handle m_playlist{nullptr};
   std::recursive_mutex m_pmMutex;
+  std::mutex m_audioMutex;
+  std::vector<float> m_audioBuffer;
   std::atomic_bool m_shutdown{false};
 
   // some projectm globals

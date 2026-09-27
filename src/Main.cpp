@@ -253,12 +253,13 @@ bool CVisualizationProjectM::AudioStart(int channels, int samplesPerSec, int bit
 //-----------------------------------------------------------------------------
 void CVisualizationProjectM::AudioData(const float* pAudioData, size_t iAudioDataLength)
 {
-  std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
-  if (m_projectM)
-  {
-    projectm_pcm_add_float(m_projectM, pAudioData, iAudioDataLength / m_playedChannelAmount,
-                           static_cast<projectm_channels>(m_playedChannelAmount));
-  }
+  // Called from the audio engine thread, which must not wait for preset loading in Render().
+  std::unique_lock<std::mutex> lock(m_audioMutex);
+  m_audioBuffer.insert(m_audioBuffer.end(), pAudioData, pAudioData + iAudioDataLength);
+
+  const size_t maxSamples = projectm_pcm_get_max_samples() * m_playedChannelAmount;
+  if (m_audioBuffer.size() > maxSamples)
+    m_audioBuffer.erase(m_audioBuffer.begin(), m_audioBuffer.end() - maxSamples);
 }
 
 //-- Render -------------------------------------------------------------------
@@ -269,6 +270,13 @@ void CVisualizationProjectM::Render()
   std::unique_lock<std::recursive_mutex> lock(m_pmMutex);
   if (m_projectM)
   {
+    {
+      std::unique_lock<std::mutex> audioLock(m_audioMutex);
+      projectm_pcm_add_float(m_projectM, m_audioBuffer.data(),
+                             m_audioBuffer.size() / m_playedChannelAmount,
+                             static_cast<projectm_channels>(m_playedChannelAmount));
+      m_audioBuffer.clear();
+    }
     projectm_opengl_render_frame(m_projectM);
   }
 }
