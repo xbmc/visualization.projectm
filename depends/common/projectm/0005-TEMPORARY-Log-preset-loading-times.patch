@@ -1,0 +1,226 @@
+From 372ef3fae09c7e8a8a0099d01459d215feaf4d78 Mon Sep 17 00:00:00 2001
+From: ksooo <kai.sommerfeld@gmx.com>
+Date: Wed, 30 Sep 2026 11:31:19 +0200
+Subject: [PATCH] TEMPORARY: Log preset loading times
+
+---
+ .../MilkdropPreset/MilkdropPreset.cpp         | 12 ++++++
+ .../MilkdropPreset/MilkdropShader.cpp         |  9 +++++
+ src/libprojectM/ProjectM.cpp                  | 19 +++++++++-
+ src/libprojectM/Timing.hpp                    | 37 +++++++++++++++++++
+ 4 files changed, 76 insertions(+), 1 deletion(-)
+ create mode 100644 src/libprojectM/Timing.hpp
+
+diff --git a/src/libprojectM/MilkdropPreset/MilkdropPreset.cpp b/src/libprojectM/MilkdropPreset/MilkdropPreset.cpp
+index ef17161..c4d83eb 100755
+--- a/src/libprojectM/MilkdropPreset/MilkdropPreset.cpp
++++ b/src/libprojectM/MilkdropPreset/MilkdropPreset.cpp
+@@ -26,6 +26,9 @@
+ #include "PresetFileParser.hpp"
+ 
+ #include <Logging.hpp>
++#include <Timing.hpp>
++
++#include <memory>
+ 
+ namespace libprojectM {
+ namespace MilkdropPreset {
+@@ -57,13 +60,18 @@ void MilkdropPreset::Initialize(const Renderer::RenderContext& renderContext)
+ {
+     assert(renderContext.textureManager);
+     m_state.renderContext = renderContext;
++    auto timing = std::make_unique<ScopedTiming>("Blur texture and static shaders");
+     m_state.blurTexture.Initialize(renderContext);
+     m_state.LoadShaders();
++    timing.reset();
+ 
+     // Initialize variables and code now we have a proper render state.
++    timing = std::make_unique<ScopedTiming>("Expression code compile and init");
+     CompileCodeAndRunInitExpressions();
++    timing.reset();
+ 
+     // Update framebuffer and texture sizes if needed
++    timing = std::make_unique<ScopedTiming>("Framebuffer resize");
+     m_framebuffer.SetSize(renderContext.viewportSizeX, renderContext.viewportSizeY);
+     m_motionVectorUVMap->SetSize(renderContext.viewportSizeX, renderContext.viewportSizeY);
+     if (m_state.mainTexture.expired())
+@@ -71,7 +79,11 @@ void MilkdropPreset::Initialize(const Renderer::RenderContext& renderContext)
+         m_state.mainTexture = m_framebuffer.GetColorAttachmentTexture(1, 0);
+     }
+ 
++    timing.reset();
++
++    timing = std::make_unique<ScopedTiming>("Warp shader total");
+     m_perPixelMesh.CompileWarpShader(m_state);
++    timing = std::make_unique<ScopedTiming>("Composite shader total");
+     m_finalComposite.CompileCompositeShader(m_state);
+ }
+ 
+diff --git a/src/libprojectM/MilkdropPreset/MilkdropShader.cpp b/src/libprojectM/MilkdropPreset/MilkdropShader.cpp
+index d9e325a..6c54860 100644
+--- a/src/libprojectM/MilkdropPreset/MilkdropShader.cpp
++++ b/src/libprojectM/MilkdropPreset/MilkdropShader.cpp
+@@ -8,11 +8,13 @@
+ #include <GLSLGenerator.h>
+ #include <HLSLParser.h>
+ #include <Logging.hpp>
++#include <Timing.hpp>
+ 
+ #include <glm/gtc/matrix_transform.hpp>
+ #include <glm/mat4x4.hpp>
+ 
+ #include <algorithm>
++#include <memory>
+ #include <regex>
+ #include <set>
+ 
+@@ -60,6 +62,7 @@ void MilkdropShader::LoadCode(const std::string& presetShaderCode)
+ void MilkdropShader::LoadTexturesAndCompile(PresetState& presetState)
+ {
+     std::locale loc;
++    auto texturesTiming = std::make_unique<ScopedTiming>(std::string("Textures ") + (m_type == ShaderType::WarpShader ? "warp" : "composite"));
+ 
+     // Now request the textures and descriptors from the texture manager.
+     for (const auto& name : m_samplerNames)
+@@ -140,6 +143,8 @@ void MilkdropShader::LoadTexturesAndCompile(PresetState& presetState)
+         m_textureSamplerDescriptors.push_back(std::move(desc));
+     }
+ 
++    texturesTiming.reset();
++
+     // Now that we have the textures, transpile the code.
+     TranspileHLSLShader(presetState, m_preprocessedCode);
+ 
+@@ -589,6 +594,7 @@ void MilkdropShader::TranspileHLSLShader(const PresetState& presetState, std::st
+         shaderTypeString = "warp";
+     }
+ 
++    auto hlslTiming = std::make_unique<ScopedTiming>("HLSL to GLSL " + shaderTypeString);
+     M4::GLSLGenerator generator;
+     M4::Allocator allocator;
+ 
+@@ -670,6 +676,9 @@ void MilkdropShader::TranspileHLSLShader(const PresetState& presetState, std::st
+ 
+     LOG_TRACE("[MilkdropShader] Transpiled GLSL " + shaderTypeString + " shader code:\n" + std::string(generator.GetResult()));
+ 
++    hlslTiming.reset();
++    ScopedTiming glTiming("GL compile and link " + shaderTypeString);
++
+     // Now we have GLSL source for the preset shader program (hopefully it's valid!)
+     // Compile the preset shader fragment shader with the standard vertex shader and cross our fingers.
+     if (m_type == ShaderType::WarpShader)
+diff --git a/src/libprojectM/ProjectM.cpp b/src/libprojectM/ProjectM.cpp
+index 9ec73af..9561da5 100644
+--- a/src/libprojectM/ProjectM.cpp
++++ b/src/libprojectM/ProjectM.cpp
+@@ -25,6 +25,7 @@
+ #include "Preset.hpp"
+ #include "PresetFactoryManager.hpp"
+ #include "TimeKeeper.hpp"
++#include "Timing.hpp"
+ 
+ #include <Audio/PCM.hpp>
+ 
+@@ -36,8 +37,12 @@
+ 
+ #include <UserSprites/SpriteManager.hpp>
+ 
++#include <memory>
++
+ namespace libprojectM {
+ 
++static uint32_t s_framesSincePresetStart{0};
++
+ ProjectM::ProjectM()
+     : m_presetFactoryManager(std::make_unique<PresetFactoryManager>())
+ {
+@@ -61,8 +66,14 @@ void ProjectM::LoadPresetFile(const std::string& presetFilename, bool smoothTran
+ {
+     try
+     {
++        ScopedTiming totalTiming("LoadPresetFile total (" + presetFilename + ")");
++        auto purgeTiming = std::make_unique<ScopedTiming>("PurgeTextures");
+         m_textureManager->PurgeTextures();
+-        StartPresetTransition(m_presetFactoryManager->CreatePresetFromFile(presetFilename), !smoothTransition);
++        purgeTiming.reset();
++        auto createTiming = std::make_unique<ScopedTiming>("CreatePresetFromFile (read, parse, framebuffers)");
++        auto preset = m_presetFactoryManager->CreatePresetFromFile(presetFilename);
++        createTiming.reset();
++        StartPresetTransition(std::move(preset), !smoothTransition);
+     }
+     catch (const std::exception& ex)
+     {
+@@ -115,6 +126,8 @@ void ProjectM::SetTextureLoadCallback(Renderer::TextureLoadCallback callback)
+ 
+ void ProjectM::RenderFrame(uint32_t targetFramebufferObject /*= 0*/)
+ {
++    ScopedTiming frameTiming("Slow frame " + std::to_string(++s_framesSincePresetStart) + " after preset start", 25.0);
++
+     // Don't render if window area is zero.
+     if (m_windowWidth == 0 || m_windowHeight == 0)
+     {
+@@ -282,7 +295,10 @@ void ProjectM::StartPresetTransition(std::unique_ptr<Preset>&& preset, bool hard
+         return;
+     }
+ 
++    s_framesSincePresetStart = 0;
++    auto initTiming = std::make_unique<ScopedTiming>("Preset Initialize total");
+     preset->Initialize(GetRenderContext());
++    initTiming.reset();
+ 
+     // If already in a transition, force immediate completion.
+     if (m_transitioningPreset != nullptr)
+@@ -293,6 +309,7 @@ void ProjectM::StartPresetTransition(std::unique_ptr<Preset>&& preset, bool hard
+ 
+     if (m_activePreset && !m_presetStartClean)
+     {
++        ScopedTiming drawTiming("DrawInitialImage");
+         preset->DrawInitialImage(m_activePreset->OutputTexture(), GetRenderContext());
+     }
+ 
+diff --git a/src/libprojectM/Timing.hpp b/src/libprojectM/Timing.hpp
+new file mode 100644
+index 0000000..17a3b7e
+--- /dev/null
++++ b/src/libprojectM/Timing.hpp
+@@ -0,0 +1,37 @@
++#pragma once
++
++#include "Logging.hpp"
++
++#include <chrono>
++#include <string>
++#include <utility>
++
++namespace libprojectM {
++
++// TEMPORARY: Logs the wall time spent in a scope, for measuring preset loading on slow devices.
++class ScopedTiming
++{
++public:
++    explicit ScopedTiming(std::string label, double thresholdMs = 0.0)
++        : m_label(std::move(label))
++        , m_thresholdMs(thresholdMs)
++        , m_start(std::chrono::steady_clock::now())
++    {
++    }
++
++    ~ScopedTiming()
++    {
++        const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - m_start).count();
++        if (ms >= m_thresholdMs)
++        {
++            LOG_INFO("[Timing] " + m_label + ": " + std::to_string(ms) + " ms")
++        }
++    }
++
++private:
++    std::string m_label;
++    double m_thresholdMs;
++    std::chrono::steady_clock::time_point m_start;
++};
++
++} // namespace libprojectM
+-- 
+2.54.0 (Apple Git-157)
+
