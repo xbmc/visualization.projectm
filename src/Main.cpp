@@ -44,6 +44,11 @@ d4rk@xbmc.org
 
 #include <unordered_map>
 
+// Scaled rendering needs framebuffer blitting, which GLES 2 lacks.
+#if defined(HAS_GL) || HAS_GLES >= 3
+#define RENDER_SCALING_SUPPORTED
+#endif
+
 namespace
 {
 
@@ -119,6 +124,8 @@ CVisualizationProjectM::~CVisualizationProjectM()
       projectm_destroy(m_projectM);
       m_projectM = nullptr;
     }
+
+    DeleteFramebuffer();
   }
 }
 
@@ -138,6 +145,7 @@ bool CVisualizationProjectM::Init()
   m_settings.smooth_duration = static_cast<double>(kodi::addon::GetSettingFloat("smooth_duration"));
   m_settings.preset_duration = static_cast<double>(kodi::addon::GetSettingFloat("preset_duration"));
   m_settings.beat_sens = kodi::addon::GetSettingFloat("beat_sens");
+  m_settings.render_scale = kodi::addon::GetSettingInt("render_scale");
 
   if (!InitProjectM())
   {
@@ -277,7 +285,40 @@ void CVisualizationProjectM::Render()
                              static_cast<projectm_channels>(m_playedChannelAmount));
       m_audioBuffer.clear();
     }
+
+#ifdef RENDER_SCALING_SUPPORTED
+    const int renderWidth = Width() * m_settings.render_scale / 100;
+    const int renderHeight = Height() * m_settings.render_scale / 100;
+    if (renderWidth != m_renderWidth || renderHeight != m_renderHeight)
+    {
+      m_renderWidth = renderWidth;
+      m_renderHeight = renderHeight;
+      projectm_set_window_size(m_projectM, m_renderWidth, m_renderHeight);
+      UpdateFramebuffer();
+    }
+
+    if (!m_framebuffer)
+    {
+      projectm_opengl_render_frame(m_projectM);
+      return;
+    }
+
+    GLint targetFramebuffer{0};
+    GLint viewport[4]{};
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &targetFramebuffer);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    projectm_opengl_render_frame_fbo(m_projectM, m_framebuffer);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFramebuffer);
+    glBlitFramebuffer(0, 0, m_renderWidth, m_renderHeight, viewport[0], viewport[1],
+                      viewport[0] + viewport[2], viewport[1] + viewport[3], GL_COLOR_BUFFER_BIT,
+                      GL_LINEAR);
+    glBindFramebuffer(GL_FRAMEBUFFER, targetFramebuffer);
+#else
     projectm_opengl_render_frame(m_projectM);
+#endif
   }
 }
 
@@ -544,6 +585,10 @@ ADDON_STATUS CVisualizationProjectM::SetSetting(const std::string& settingName,
           projectm_set_beat_sensitivity(m_projectM, m_settings.beat_sens);
         }
       }
+      else if (settingName == "render_scale")
+      {
+        m_settings.render_scale = settingValue.GetInt();
+      }
     }
 
     // becomes changed in future by a additional value on function, currently we
@@ -624,6 +669,10 @@ bool CVisualizationProjectM::InitProjectM()
       // Reconnect new instance with existing playlist manager
       projectm_playlist_connect(m_playlist, m_projectM);
     }
+
+    // Makes Render() apply the window size and framebuffer to the new instance.
+    m_renderWidth = 0;
+    m_renderHeight = 0;
 
     if (oldProjectM)
     {
@@ -720,6 +769,53 @@ void CVisualizationProjectM::ReloadPlaylist()
     projectm_playlist_set_shuffle(m_playlist, true);
     projectm_playlist_play_next(m_playlist, true);
     projectm_playlist_set_shuffle(m_playlist, shuffleEnabled);
+  }
+}
+
+#ifdef RENDER_SCALING_SUPPORTED
+void CVisualizationProjectM::UpdateFramebuffer()
+{
+  DeleteFramebuffer();
+
+  if (m_settings.render_scale >= 100)
+    return;
+
+  GLint previousFramebuffer{0};
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previousFramebuffer);
+
+  glGenRenderbuffers(1, &m_colorRenderbuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, m_colorRenderbuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, m_renderWidth, m_renderHeight);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  glGenFramebuffers(1, &m_framebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+                            m_colorRenderbuffer);
+  const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  glBindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
+
+  if (status != GL_FRAMEBUFFER_COMPLETE)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "%s: Framebuffer incomplete (0x%x), rendering at full size",
+              __func__, status);
+    DeleteFramebuffer();
+    projectm_set_window_size(m_projectM, Width(), Height());
+  }
+}
+#endif
+
+void CVisualizationProjectM::DeleteFramebuffer()
+{
+  if (m_framebuffer)
+  {
+    glDeleteFramebuffers(1, &m_framebuffer);
+    m_framebuffer = 0;
+  }
+  if (m_colorRenderbuffer)
+  {
+    glDeleteRenderbuffers(1, &m_colorRenderbuffer);
+    m_colorRenderbuffer = 0;
   }
 }
 
