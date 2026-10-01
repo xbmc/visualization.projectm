@@ -44,6 +44,7 @@ d4rk@xbmc.org
 
 #include <atomic>
 #include <kodi/addon-instance/Visualization.h>
+#include <kodi/gui/gl/GL.h>
 #include <mutex>
 #include <projectM-4/playlist.h>
 #include <projectM-4/projectM.h>
@@ -77,6 +78,8 @@ private:
   void ChooseUserPresetFolder(std::string pvalue);
   std::string GetBasename(std::string fullPath);
   void ReloadPlaylist();
+  void UpdateFramebuffer();
+  void DeleteFramebuffer();
   static void PresetSwitchedEvent(bool isHardCut, unsigned int index, void* context);
   static void ProjectMLogCallback(const char* message,
                                   projectm_log_level log_level,
@@ -101,6 +104,7 @@ private:
     double smooth_duration{0};
     double preset_duration{0};
     float beat_sens{0};
+    int render_scale{100};
   } m_settings;
 
   projectm_handle m_projectM{nullptr};
@@ -109,6 +113,12 @@ private:
   std::mutex m_audioMutex;
   std::vector<float> m_audioBuffer;
   std::atomic_bool m_shutdown{false};
+
+  // Reduced size render target, only used if render_scale is below 100 %.
+  GLuint m_framebuffer{0};
+  GLuint m_colorRenderbuffer{0};
+  int m_renderWidth{0};
+  int m_renderHeight{0};
 
   // some projectm globals
   const static int gx{40};
