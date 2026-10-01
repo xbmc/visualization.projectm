@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: XBMC Main\n"
-"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"Report-Msgid-Bugs-To: http://trac.xbmc.org/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2025-02-26 23:03+0000\n"
 "Last-Translator: Sveinn í Felli <sv1@fellsnet.is>\n"
@@ -80,6 +80,10 @@ msgstr "Nota möppu"
 msgctxt "#30013"
 msgid "General"
 msgstr "Almennt"
+
+msgctxt "#30014"
+msgid "Renders the visualisation at a lower resolution and scales it up to the screen size. Reduce this if the visualisation stutters, for example on slower devices or at high screen resolutions. Lower values make the picture less sharp."
+msgstr ""
 
 # empty strings from id 30013 to 30019
 msgctxt "#30020"
