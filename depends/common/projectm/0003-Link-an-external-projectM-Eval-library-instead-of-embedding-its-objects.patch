@@ -1,0 +1,69 @@
+From ecc64ae24cbcf25f1c2db5ed74e6853283409993 Mon Sep 17 00:00:00 2001
+From: ksooo <kai.sommerfeld@gmx.com>
+Date: Tue, 6 Oct 2026 23:11:26 +0200
+Subject: [PATCH] Link an external projectM-Eval library instead of embedding
+ its objects
+
+$<TARGET_OBJECTS> yields nothing for an imported library, so with an
+external projectM-Eval a static libprojectM lacked all projectM-Eval
+symbols. Link the external library instead, and let the installed
+package config find it for static builds.
+---
+ src/libprojectM/CMakeLists.txt           | 12 +++++++++++-
+ src/libprojectM/projectM4Config.cmake.in |  3 +++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/src/libprojectM/CMakeLists.txt b/src/libprojectM/CMakeLists.txt
+index 024fdfd..5850666 100644
+--- a/src/libprojectM/CMakeLists.txt
++++ b/src/libprojectM/CMakeLists.txt
+@@ -62,6 +62,9 @@ target_include_directories(projectM_main
+         "${MSVC_EXTRA_INCLUDE_DIR}"
+         )
+ 
++# The objects of an external projectM-Eval library can't be pulled in, it has to be linked instead.
++get_target_property(PROJECTM_EVAL_IMPORTED projectM::Eval IMPORTED)
++
+ # CMake cannot combine multiple static libraries using target_link_libraries.
+ # This syntax will pull in the compiled object files into the final library.
+ add_library(projectM
+@@ -73,7 +76,7 @@ add_library(projectM
+         $<TARGET_OBJECTS:hlslparser>
+         $<TARGET_OBJECTS:stb_image>
+         $<TARGET_OBJECTS:projectM_main>
+-        $<TARGET_OBJECTS:projectM::Eval>
++        $<$<NOT:$<BOOL:${PROJECTM_EVAL_IMPORTED}>>:$<TARGET_OBJECTS:projectM::Eval>>
+         $<TARGET_OBJECTS:glad_obj>
+         )
+ 
+@@ -97,6 +100,13 @@ target_link_libraries(projectM
+         ${PROJECTM_FILESYSTEM_LIBRARY}
+         )
+ 
++if(PROJECTM_EVAL_IMPORTED)
++    target_link_libraries(projectM
++            PRIVATE
++            projectM::Eval
++            )
++endif()
++
+ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+     target_link_libraries(projectM
+             PUBLIC
+diff --git a/src/libprojectM/projectM4Config.cmake.in b/src/libprojectM/projectM4Config.cmake.in
+index c999bbd..4e9c5e4 100644
+--- a/src/libprojectM/projectM4Config.cmake.in
++++ b/src/libprojectM/projectM4Config.cmake.in
+@@ -9,6 +9,9 @@ if(NOT "@ENABLE_EMSCRIPTEN@") # ENABLE_EMSCRIPTEN
+         find_dependency(OpenGL)
+     endif()
+ endif()
++if("@PROJECTM_EVAL_IMPORTED@" AND NOT "@BUILD_SHARED_LIBS@")
++    find_dependency(projectM-Eval)
++endif()
+ if("@ENABLE_BOOST_FILESYSTEM@") # ENABLE_BOOST_FILESYSTEM
+     if(POLICY CMP0167)
+         cmake_policy(SET CMP0167 NEW)
+-- 
+2.54.0 (Apple Git-157)
+
