@@ -1,0 +1,1 @@
+projectm-eval https://github.com/projectM-visualizer/projectm-eval/archive/refs/tags/v1.0.7.tar.gz
