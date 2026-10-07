@@ -104,7 +104,7 @@
         <setting id="render_scale" type="integer" label="30000" help="30014">
           <default>100</default>
           <constraints>
-            <minimum>50</minimum>
+            <minimum>25</minimum>
             <step>25</step>
             <maximum>100</maximum>
           </constraints>
