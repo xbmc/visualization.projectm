@@ -286,6 +286,9 @@ void CVisualizationProjectM::Render()
       m_audioBuffer.clear();
     }
 
+    // Kodi leaves blending enabled, but projectM's first draw of a frame expects it disabled.
+    glDisable(GL_BLEND);
+
 #ifdef RENDER_SCALING_SUPPORTED
     const int renderWidth = Width() * m_settings.render_scale / 100;
     const int renderHeight = Height() * m_settings.render_scale / 100;
